@@ -94,6 +94,10 @@ except pytvmaze.exceptions.ConnectionError:
     printLightRed("No internet internet connection, check your connection and try again.")
     input("Press Enter to exit")
     raise SystemExit("") #identical to sys.exit(), but in that case I don't need to import another library (here 'sys')
+except:
+    printLightRed("Unexpected Error. Check if multiple series have the same name, that could explain why.")
+    input("Press Enter to exit")
+    raise SystemExit("")
 
 with open ("list_of_episode_names.txt","w") as my_file:
     try:
