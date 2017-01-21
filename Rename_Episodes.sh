@@ -1,12 +1,15 @@
-#!/bin/bash
+#!/bin/sh
 
 IFS=$'\n'   #Input Field Separator
 
+SCRIPT_FOLDER_PATH=$PWD
 FILE_WITH_EPISODE_NAME="list_of_episode_names.txt"
 SEASON_NAME=""
 SEASON_NUMBER=""
 PARENT_FOLDER_NAME=""
-SCRIPT_FOLDER_NAME=$(echo ${PWD##*/})
+#SCRIPT_FOLDER_NAME=$(echo ${PWD##*/})
+
+SERIE_FOLDER_PATH=$(readlink -e $1)
 
 # Overall description:
 # The idea is to put all the scripts in 1 folder and work in this only folder. 
@@ -20,21 +23,35 @@ SCRIPT_FOLDER_NAME=$(echo ${PWD##*/})
 #       - Episode 2.srt
 #       - ...
 #       - ...
-#       * Script_Episode
-#           - Rename_episode.sh
-#           - find_name_on_internet.py
+#
+#
+#   * Script_Episode
+#       - Rename_episode.sh
+#       - find_name_on_internet.py
 #           
 # This code will rename : - the main folder "SEASON_NAME - Season X" if there is a typo in the Season Name
 #                         - all the .mkv file as follows "Saison Name - 02x13 - Episode Name.mkv"
 #                         - all the .srt file as follows "Saison Name - 02x13 - Episode Name.en.srt"
 # 
 # In order to work properly an API needs to be installed (to get the season's informations)
-# but also the GNU sed wich is not a built in feature on MacOS:
-# The following two commands will get you the right setup
+# but also the GNU sed wich is not a built in feature on MacOS, as well as the gnu version of readlink:
+# The following commands will get you the right setup
 # 
+#  brew install coreutils
 #  brew install -with-default-names gnu-sed
 #  pip install tvmaze
+#  
+# coreutils gets you the linux like command greadlink which work as readlink.
+#  
+#  modify .bash_profile and add the following lines
+#  # enable Homebrew coreutils
+#    export PATH="/usr/local/opt/coreutils/libexec/gnubin:$PATH"
+#    export MANPATH="/usr/local/opt/coreutils/libexec/gnuman:$MANPATH"
+#    
+# These lines will allow you to use all coreutils command lines without the need to add 'g' before. 
+# Adding it to the path alows you to not take care of it anymore and use GNU command.
 # 
+
 
 
 # (Unfortunatly) Since the command 'ls -v' doesn't seem to be working here (but does on linux) we need to pre-process the episodes' name.
@@ -101,10 +118,14 @@ function rename_mkv()
 # The python scrpit will then extract these information and work from there.
 function write_my_txt_file()
 {
+
+    # INPUT PATH : /xxx/yyy/zzz/Season_Name - Season X
     
+
+
     # Get the name of the main folder we want to extract the informations of. (here : Season_Name - Season X)
     # This folder contains all the .mkv and .srt + the script's folder
-    PARENT_FOLDER_NAME=$(echo ${PWD##*/})
+    PARENT_FOLDER_NAME=$(basename $(readlink -e .))
 
     # Now truncate both sides of the folder's name and store the result
     infos=$(echo $PARENT_FOLDER_NAME | sed 's/\ \-\ /\n/g')
@@ -113,8 +134,8 @@ function write_my_txt_file()
     # We will store that value in the .txt file later, then the python script will check the accuracy and prevent shifting in naming.
     total_mkv_file=$(ls *.mkv | wc -l | sed 's/\t//')
     
-    cd $SCRIPT_FOLDER_NAME
-    # now at /xxx/yyy/zzz/Season_Name - Season X/Script_Episode
+    cd $SCRIPT_FOLDER_PATH
+    # now at /aaa/bbb/ccc/Script_Episode
 
     # This create the .txt file and give permission to modify it, then write the info in it
     touch $FILE_WITH_EPISODE_NAME
@@ -129,31 +150,40 @@ function write_my_txt_file()
     echo $total_mkv_file >> $FILE_WITH_EPISODE_NAME
     # At the end :
     # 1st line = Season Name
-    # 2nd line = Season Number
-    # 3rd line = number of episode (.mkv files)
+    # 2nd line = Season N
+    # 3rd line = number of episodes (.mkv files)
 
     # We save the season Name and Season Number in global variables we'll use later
     SEASON_NAME="$(sed -n 1p $FILE_WITH_EPISODE_NAME)"
 
-    # We don't actually need "Season" of "Season X", only the number matters
+    # We don't actually need "Season" of "Season N", only the number matters
     sed -i '2 s/[^0-9]//g' $FILE_WITH_EPISODE_NAME
     # We want the season number a 2 digit number 02, 05, 10 etc.
     SEASON_NUMBER="$( sed -n 2p $FILE_WITH_EPISODE_NAME | sed 's/^[1-9]/0&/')"
+
+    cd $SERIE_FOLDER_PATH
+    # same current directory as it entered the funtion
+
+
+
+    # OUTPUT PATH : /xxx/yyy/zzz/Season_Name - Season X
 }
  
 
-cd ..
+cd $SERIE_FOLDER_PATH
 # Now at /xxx/yyy/zzz/Season_Name - Season X
 write_my_txt_file
+
+cd $SCRIPT_FOLDER_PATH
+# Now at /aaa/bbb/ccc/Script_Episode
 ./find_name_on_internet.py
 
-cd ..
-# now at /xxx/yyy/zzz/Season_Name - Season X (the function write_my_txt_file changed the current directory)
-
 # Move the python generated .txt file in the working directory (which contains all the .mkv & .srt files)
-cp $SCRIPT_FOLDER_NAME/$FILE_WITH_EPISODE_NAME ./
+cp $SCRIPT_FOLDER_PATH/$FILE_WITH_EPISODE_NAME $SERIE_FOLDER_PATH
 
-
+cd $SERIE_FOLDER_PATH
+# Now at /xxx/yyy/zzz/Season_Name - Season X
+# 
 if [ $(grep -c "\*\*\*New_Name" $FILE_WITH_EPISODE_NAME) -gt 0 ] # if new name to be defined then change it (because of a possible typo in the folder name)
 then
     rename_line_number=$( sed -n "/\*\*\*New_Name/=" $FILE_WITH_EPISODE_NAME)
@@ -165,9 +195,14 @@ then
     cd ..
     # now at /xxx/yyy/zzz/
     new_folder_name="$SEASON_NAME - Season $(echo $SEASON_NUMBER | sed 's/0\([1-9]\)/\1/')"
+
     mv $PARENT_FOLDER_NAME $new_folder_name
-    cd $new_folder_name
-    # now at /xxx/yyy/zzz/Season_Name - Season X
+    PARENT_FOLDER_NAME=$new_folder_name
+    SERIE_FOLDER_PATH=$(readlink -e $new_folder_name)
+    PARENT_FOLDER_NAME=$new_folder_name
+    echo "VERIF NEW PATH = $SERIE_FOLDER_PATH"
+    cd $SERIE_FOLDER_PATH
+    # now at /xxx/yyy/zzz/Season_Name - Season X (with updated Season_Name)
 fi
     
 if [ $(grep -c "\*\*\*ERR\*\*\*" $FILE_WITH_EPISODE_NAME) -eq 0 ]; then # if no Error in file
@@ -192,7 +227,7 @@ rm $FILE_WITH_EPISODE_NAME
 # 
 # Somehow adding a "sleep 1" command before prevent that error and allows the rm command without -f option
 # It is probably because of a parallel threading of "finder" execution. Makes sens but I have no idea how to prove it though
-rm -f $SCRIPT_FOLDER_NAME/$FILE_WITH_EPISODE_NAME
+rm $SCRIPT_FOLDER_PATH/$FILE_WITH_EPISODE_NAME
 
 
 
