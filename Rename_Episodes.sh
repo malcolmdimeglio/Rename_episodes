@@ -1,4 +1,4 @@
-#!/bin/sh
+#!/bin/bash
 
 IFS=$'\n'   #Input Field Separator
 
@@ -7,8 +7,6 @@ FILE_WITH_EPISODE_NAME="list_of_episode_names.txt"
 SEASON_NAME=""
 SEASON_NUMBER=""
 PARENT_FOLDER_NAME=""
-#SCRIPT_FOLDER_NAME=$(echo ${PWD##*/})
-
 SERIE_FOLDER_PATH=$(readlink -e $1)
 
 # Overall description:
