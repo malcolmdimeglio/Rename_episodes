@@ -37,7 +37,7 @@ SERIE_FOLDER_PATH=$(readlink -e $1)
 # 
 #  brew install coreutils
 #  brew install -with-default-names gnu-sed
-#  pip install tvmaze
+#  pip install pytvmaze (could need a 'pip install --upgrade pytvmaze')
 #  
 # coreutils gets you the linux like command greadlink which work as readlink.
 #  
@@ -198,7 +198,7 @@ then
     PARENT_FOLDER_NAME=$new_folder_name
     SERIE_FOLDER_PATH=$(readlink -e $new_folder_name)
     PARENT_FOLDER_NAME=$new_folder_name
-    echo "VERIF NEW PATH = $SERIE_FOLDER_PATH"
+    
     cd $SERIE_FOLDER_PATH
     # now at /xxx/yyy/zzz/Season_Name - Season X (with updated Season_Name)
 fi
