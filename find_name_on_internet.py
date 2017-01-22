@@ -84,7 +84,8 @@ with open ("list_of_episode_names.txt","r") as my_file:
 
 
 try:
-    my_show = pytvmaze.get_show(show_name=season_name,embed='episodes')
+    tvm = pytvmaze.TVMaze()
+    my_show = tvm.get_show(show_name=season_name,embed='episodes')
 except pytvmaze.exceptions.ShowNotFound:
     # The above listed color print functions can't take more than 1 expression, the line below prints as printLightRed  but with several variables
     print("\033[91mCouldn't find \"{}\" online, look for typos or rename the episodes yourself\nSorry\033[00m".format(season_name))
