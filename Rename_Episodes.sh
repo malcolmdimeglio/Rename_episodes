@@ -10,25 +10,9 @@ PARENT_FOLDER_NAME=""
 SERIE_FOLDER_PATH=$(readlink -e $1)
 
 # Overall description:
-# The idea is to put all the scripts in 1 folder and work in this only folder. 
-# That we can just copy paste the script folder to every workplace
-# Here is the architecture of the different folders
-# 
-#   * SEASON_NAME - Season X
-#       - Episode 1.mkv
-#       - Episode 1.srt
-#       - Episode 2.mkv
-#       - Episode 2.srt
-#       - ...
-#       - ...
-#
-#
-#   * Script_Episode
-#       - Rename_episode.sh
-#       - find_name_on_internet.py
-#           
+
 # This code will rename : - the main folder "SEASON_NAME - Season X" if there is a typo in the Season Name
-#                         - all the .mkv file as follows "Saison Name - 02x13 - Episode Name.mkv"
+#                         - all the .mkv & .mp4 file as follows "Saison Name - 02x13 - Episode Name.mkv(.mp4)"
 #                         - all the .srt file as follows "Saison Name - 02x13 - Episode Name.en.srt"
 # 
 # In order to work properly an API needs to be installed (to get the season's informations)
@@ -62,10 +46,11 @@ SERIE_FOLDER_PATH=$(readlink -e $1)
 # This fucntion also reformat the episode names written in the text file. (Gets all first letter with capital case)
 function rename_files_and_format_episode_name()
 {
-    for my_file in $(ls *.mkv | grep '[^0-9][0-9][^0-9]'); do
+    for my_file in $(ls *.mkv *.mp4 | grep '[^0-9][0-9][^0-9]'); do
         mv $my_file $(echo $my_file | sed 's/\([^0-9]\)\(\([0-9]\)[^0-9]\)/\10\2/g')
     done
 
+    # this test is not really important, though it prevents an error log to be printed if there is no .srt files in the folder
     if [ $1 == "SRT_PRESENT" ]; then
         for my_file in $(ls *.srt | grep '[^0-9][0-9][^0-9]'); do
             mv $my_file $(echo $my_file | sed 's/\([^0-9]\)\(\([0-9]\)[^0-9]\)/\10\2/g')
@@ -84,9 +69,15 @@ function rename_files_and_format_episode_name()
 function rename_mkv()
 {
     num_episode=1
-    for file in $(ls *.mkv)
+    for file in $(ls *.mkv *.mp4)
     do
-        EPISODE_NAME="$(sed -n ${num_episode}p $FILE_WITH_EPISODE_NAME).mkv"
+        if [ $(echo $file | grep -c ".mkv") -gt 0 ]; then
+            ext="mkv"
+        elif [ $(echo $file | grep -c ".mp4") -gt 0 ]; then
+            ext="mp4"
+        fi
+
+        EPISODE_NAME="$(sed -n ${num_episode}p $FILE_WITH_EPISODE_NAME).$ext"
         EPISODE_NUMBER="$( printf %02d $num_episode )"
         
         mv "$file" "$SEASON_NAME - ${SEASON_NUMBER}x$EPISODE_NUMBER - $EPISODE_NAME"
@@ -130,7 +121,7 @@ function write_my_txt_file()
     # We want the number of .mkv file stored. This will help in case two episodes have been merged into one.
     # whereas on internet they may appear as two different ones. 
     # We will store that value in the .txt file later, then the python script will check the accuracy and prevent shifting in naming.
-    total_mkv_file=$(ls *.mkv | wc -l | sed 's/\t//')
+    total_mkv_file=$(ls *.mkv *.mp4 | wc -l | sed 's/\t//')
     
     cd $SCRIPT_FOLDER_PATH
     # now at /aaa/bbb/ccc/Script_Episode
