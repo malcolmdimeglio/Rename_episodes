@@ -35,41 +35,12 @@ SERIE_FOLDER_PATH=$(readlink -e $1)
 # 
 
 
-
-# (Unfortunatly) Since the command 'ls -v' doesn't seem to be working here (but does on linux) we need to pre-process the episodes' name.
-# The function below lists all the files that have a single number enclosed between two caracters in their name (i.e. Hello1you)
-# if there is more than one occurence in the name, we want to change them all
-# We want to add a 0 before the number (for single digit number) in the file name (i.e. Hello01you)
-# this will help later to list and sort all the files.
-# If it's not done, episode10 would be listed before episode2 which will fuck everything up
-# now with episode2 named as episode02, the problem is solved
-# This fucntion also reformat the episode names written in the text file. (Gets all first letter with capital case)
-function rename_files_and_format_episode_name()
-{
-    for my_file in $(ls *.mkv *.mp4 | grep '[^0-9][0-9][^0-9]'); do
-        mv $my_file $(echo $my_file | sed 's/\([^0-9]\)\(\([0-9]\)[^0-9]\)/\10\2/g')
-    done
-
-    # this test is not really important, though it prevents an error log to be printed if there is no .srt files in the folder
-    if [ $1 == "SRT_PRESENT" ]; then
-        for my_file in $(ls *.srt | grep '[^0-9][0-9][^0-9]'); do
-            mv $my_file $(echo $my_file | sed 's/\([^0-9]\)\(\([0-9]\)[^0-9]\)/\10\2/g')
-        done
-    fi
-
-
-    # 1st lower case all the caracter in order to work on a simple base
-    # 2nd upper case the first letter of the line
-    # 3rd upper case all the letter following a "space" caracter
-    sed -i -e 's/[A-Z]/\L&/g' -e 's/^./\U&/g' -e 's/ ./\U&/g' $FILE_WITH_EPISODE_NAME   
-}
-
 # This function will rename all the episode with the same format
-# e.g. Saison Name - 02x13 - Episode Name.mkv
-function rename_mkv()
+# e.g. Saison Name - 02x13 - Episode Name.mkv(.mp4)(.en.srt)
+function rename_files()
 {
     num_episode=1
-    for file in $(ls *.mkv *.mp4)
+    for file in $(ls -v *.mkv *.mp4)
     do
         if [ $(echo $file | grep -c ".mkv") -gt 0 ]; then
             ext="mkv"
@@ -83,21 +54,22 @@ function rename_mkv()
         mv "$file" "$SEASON_NAME - ${SEASON_NUMBER}x$EPISODE_NUMBER - $EPISODE_NAME"
         ((num_episode++))
     done
-}
- 
- # same as above but for .srt (subtitles files) ** the syntax is slightly different
- function rename_srt()
-{
-    num_episode=1
 
-    for file in $(ls *.srt)
-    do
-        EPISODE_NAME="$(sed -n ${num_episode}p $FILE_WITH_EPISODE_NAME).en.srt"
-        EPISODE_NUMBER="$( printf %02d $num_episode )"
+    if [ $(ls | grep -c ".srt") -gt 0 ]; then
+        num_episode=1
+        ext="en.srt"
+        
+        for file in $(ls -v *.srt)
+        do
+            EPISODE_NAME="$(sed -n ${num_episode}p $FILE_WITH_EPISODE_NAME).$ext"
+            EPISODE_NUMBER="$( printf %02d $num_episode )"
+        
+            mv "$file" "$SEASON_NAME - ${SEASON_NUMBER}x$EPISODE_NUMBER - $EPISODE_NAME"
+            ((num_episode++))
+        done
+    fi
 
-        mv "$file" "$SEASON_NAME - ${SEASON_NUMBER}x$EPISODE_NUMBER - $EPISODE_NAME"
-        ((num_episode++))
-    done
+
 }
 
 # Usually the folder used to put all the .mkv and .srt file is name as followed : Season_name - Season X
@@ -195,14 +167,13 @@ then
 fi
     
 if [ $(grep -c "\*\*\*ERR\*\*\*" $FILE_WITH_EPISODE_NAME) -eq 0 ]; then # if no Error in file
-    
-    if [ $(ls | grep -c ".srt") -gt 0 ]; then
-        rename_files_and_format_episode_name "SRT_PRESENT"
-        rename_srt
-    else 
-        rename_files_and_format_episode_name "SRT_NOT_PRESENT"
-    fi      
-    rename_mkv
+
+    # 1st lower case all the caracter in order to work on a simple base
+    # 2nd upper case the first letter of the line
+    # 3rd upper case all the letter following a "space" caracter
+    sed -i -e 's/[A-Z]/\L&/g' -e 's/^./\U&/g' -e 's/ ./\U&/g' $FILE_WITH_EPISODE_NAME
+
+    rename_files
 fi
 
 
