@@ -8,6 +8,7 @@ SEASON_NAME=""
 SEASON_NUMBER=""
 PARENT_FOLDER_NAME=""
 SERIE_FOLDER_PATH=$(readlink -e $1)
+OPTION="DEFAULT"
 
 # Overall description:
 
@@ -34,43 +35,6 @@ SERIE_FOLDER_PATH=$(readlink -e $1)
 # Adding it to the path alows you to not take care of it anymore and use GNU command.
 # 
 
-
-# This function will rename all the episode with the same format
-# e.g. Saison Name - 02x13 - Episode Name.mkv(.mp4)(.en.srt)
-function rename_files()
-{
-    num_episode=1
-    for file in $(ls -v *.mkv *.mp4)
-    do
-        if [ $(echo $file | grep -c ".mkv") -gt 0 ]; then
-            ext="mkv"
-        elif [ $(echo $file | grep -c ".mp4") -gt 0 ]; then
-            ext="mp4"
-        fi
-
-        EPISODE_NAME="$(sed -n ${num_episode}p $FILE_WITH_EPISODE_NAME).$ext"
-        EPISODE_NUMBER="$( printf %02d $num_episode )"
-        
-        mv "$file" "$SEASON_NAME - ${SEASON_NUMBER}x$EPISODE_NUMBER - $EPISODE_NAME"
-        ((num_episode++))
-    done
-
-    if [ $(ls | grep -c ".srt") -gt 0 ]; then
-        num_episode=1
-        ext="en.srt"
-        
-        for file in $(ls -v *.srt)
-        do
-            EPISODE_NAME="$(sed -n ${num_episode}p $FILE_WITH_EPISODE_NAME).$ext"
-            EPISODE_NUMBER="$( printf %02d $num_episode )"
-        
-            mv "$file" "$SEASON_NAME - ${SEASON_NUMBER}x$EPISODE_NUMBER - $EPISODE_NAME"
-            ((num_episode++))
-        done
-    fi
-
-
-}
 
 # Usually the folder used to put all the .mkv and .srt file is name as followed : Season_name - Season X
 # With X a number (2, 5, 10 etc.)
@@ -129,7 +93,6 @@ function write_my_txt_file()
 
     # OUTPUT PATH : /xxx/yyy/zzz/Season_Name - Season X
 }
- 
 
 cd $SERIE_FOLDER_PATH
 # Now at /xxx/yyy/zzz/Season_Name - Season X
@@ -165,7 +128,18 @@ then
     cd $SERIE_FOLDER_PATH
     # now at /xxx/yyy/zzz/Season_Name - Season X (with updated Season_Name)
 fi
-    
+
+if [ $(grep -c "\*\*\*Merge" $FILE_WITH_EPISODE_NAME) -gt 0 ]; then # Means we need to merge 2 episode names into 1
+    OPTION="MERGE"
+    find_line_merge=$(sed -n "/\*\*\*Merge/=" $FILE_WITH_EPISODE_NAME) # Get the line number we want to work on
+    sed -i 's/\*\*\*Merge \= //' $FILE_WITH_EPISODE_NAME    # get rid of useless caracters
+
+    ep1=$(sed -n ${find_line_merge}p $FILE_WITH_EPISODE_NAME | cut -d ' ' -f1)
+    ep2=$(sed -n ${find_line_merge}p $FILE_WITH_EPISODE_NAME | cut -d ' ' -f2)
+
+    sed -i "${find_line_merge}d" $FILE_WITH_EPISODE_NAME # don't want that line in the file anymore
+fi
+
 if [ $(grep -c "\*\*\*ERR\*\*\*" $FILE_WITH_EPISODE_NAME) -eq 0 ]; then # if no Error in file
 
     # 1st lower case all the caracter in order to work on a simple base
@@ -173,8 +147,66 @@ if [ $(grep -c "\*\*\*ERR\*\*\*" $FILE_WITH_EPISODE_NAME) -eq 0 ]; then # if no 
     # 3rd upper case all the letter following a "space" caracter
     sed -i -e 's/[A-Z]/\L&/g' -e 's/^./\U&/g' -e 's/ ./\U&/g' $FILE_WITH_EPISODE_NAME
 
-    rename_files
+# We now want to rename all the episodes with the same format
+# e.g. Saison Name - 02x13 - Episode Name.mkv(.mp4)(.en.srt)
+# or Saison Name - 02x13&14 - Episode Name + Episode Name.mkv(.mp4)(.en.srt)
+    num_episode=1
+    for file in $(ls -v *.mkv *.mp4)
+    do
+        if [ $(echo $file | grep -c ".mkv") -gt 0 ]; then
+            ext="mkv"
+        elif [ $(echo $file | grep -c ".mp4") -gt 0 ]; then
+            ext="mp4"
+        fi
+
+        if [ $OPTION == "DEFAULT" ]; then
+            EPISODE_NAME="$(sed -n ${num_episode}p $FILE_WITH_EPISODE_NAME).$ext"
+            EPISODE_NUMBER="$( printf %02d $num_episode )"
+            
+            mv "$file" "$SEASON_NAME - ${SEASON_NUMBER}x$EPISODE_NUMBER - $EPISODE_NAME"
+            ((num_episode++))
+
+        elif [ $OPTION == "MERGE" ]; then
+            if [ $num_episode == $ep1 ]; then
+
+                EPISODE_NAME="$(sed -n ${ep1}p $FILE_WITH_EPISODE_NAME)"
+                EPISODE_NAME="${EPISODE_NAME} + $(sed -n ${ep2}p $FILE_WITH_EPISODE_NAME).$ext"
+                EPISODE_NUMBER="$( printf %02d"&"%02d $ep1 $ep2)"
+                
+                mv "$file" "$SEASON_NAME - ${SEASON_NUMBER}x$EPISODE_NUMBER - $EPISODE_NAME"
+                num_episode=$(($num_episode+2))
+            else
+                EPISODE_NAME="$(sed -n ${num_episode}p $FILE_WITH_EPISODE_NAME).$ext"
+                EPISODE_NUMBER="$( printf %02d $num_episode )"
+                
+                mv "$file" "$SEASON_NAME - ${SEASON_NUMBER}x$EPISODE_NUMBER - $EPISODE_NAME"
+                ((num_episode++))
+            fi
+
+        fi
+
+    done
+
+    if [ $(ls | grep -c ".srt") -gt 0 ]; then
+        num_episode=1
+        ext="en.srt"
+        
+        for file in $(ls -v *.srt)
+        do
+            EPISODE_NAME="$(sed -n ${num_episode}p $FILE_WITH_EPISODE_NAME).$ext"
+            EPISODE_NUMBER="$( printf %02d $num_episode )"
+        
+            mv "$file" "$SEASON_NAME - ${SEASON_NUMBER}x$EPISODE_NUMBER - $EPISODE_NAME"
+            ((num_episode++))
+        done
+
+        # Hightly improbable to find 2 merged episodes (.mkv/.mp4) with 2 merged .srt files. If there are subtitles with this show,
+        # there are most likely hardcoded or available through the menu.
+
+    fi
+
 fi
+
 
 
 rm $FILE_WITH_EPISODE_NAME

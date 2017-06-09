@@ -11,7 +11,7 @@
 # |X                |
 # |Y                |
 # +-----------------+
-# X represent the Season number, Y represent the total of .mkv file in the folder.
+# X represent the Season number, Y represent the total of .mkv/.mp4 file in the folder.
 # Y will help to secure the script. If Y and the number found on internet differ we want to be able to know it.
 # 
 # The .txt output file architecture is as follows:
@@ -38,6 +38,17 @@
 # |***New_Name = XX |
 # +-----------------+
 # With XX as the Season Name without the typo. This info will be used to rename properly all the .mkv and .srt but also the main folder.
+# 
+# If there is a merge needed in the naming of 2 episodes then the .txt output file architecture is as follows:
+# +-----------------+
+# |Episode Name 1   |
+# |Episode Name 2   |
+# |...              |
+# |...              |
+# |***Merge = X Y   |
+# +-----------------+
+# With X & Y the 2 episode numbers to merge
+
 
 
 
@@ -64,6 +75,8 @@ import pytvmaze
 # pink='\033[95m'
 # lightcyan='\033[96m'
 
+web_nbr_of_episodes = 0
+
 def printDarkRed(word):     print("\033[31m {}\033[00m" .format(word))
 def printOrange(word):      print("\033[33m {}\033[00m" .format(word))
 def printLightGrey(word):   print("\033[37m {}\033[00m" .format(word))
@@ -74,7 +87,22 @@ def printLightPurple(word): print("\033[94m {}\033[00m" .format(word))
 def printPink(word):        print("\033[95m {}\033[00m" .format(word))
 def printCyan(word):        print("\033[96m {}\033[00m" .format(word))
 
-web_nbr_of_episodes = 0
+
+def options (mkv_nbr, web_nbr):
+    if (mkv_nbr < web_nbr): # ask if merge 2 or more episodes names
+        input_list = input("List the episodes' number you want to merge, separated by spaces: ")
+        input_list = input_list.split(' ')
+
+        if len(input_list) != 2:
+            print("Please only put 2 episodes you want to merge together")
+            options(mkv_nbr, web_nbr)
+        else:
+            if (int(input_list[0]) > int(input_list[1])):
+                input_list[1], input_list[0] = input_list[0], input_list[1]
+            return (input_list[0], input_list[1])
+    #else: # remind that the exciding files wont be renamed
+    #
+
 
 
 with open ("list_of_episode_names.txt","r") as my_file:
@@ -107,6 +135,7 @@ with open ("list_of_episode_names.txt","w") as my_file:
     except pytvmaze.exceptions.SeasonNotFound:
         # The above listed color print functions can't take more than 1 expression, the line below prints as printLightRed but with several variables
         print ("\033[91mCouldn't find the Season {} look for typos or rename the episodes yourself\nSorry\033[00m ".format(season_number))
+        my_file.write("***ERR***"+'\n')
         input("Press Enter to exit")
         raise SystemExit("") #identical to  sys.exit(), but in that case I don't need to import another library (here 'sys')
 
@@ -114,20 +143,23 @@ with open ("list_of_episode_names.txt","w") as my_file:
     # if the total episode number in the folder is different from the number of episode found on internet 
     if int (txt_total_ep) != web_nbr_of_episodes:
         printLightRed("/!\\ Be careful! The number of episodes you have doesn't match the actual number of episode in this TV show")
-        print("Total .mkv files counted: {}".format(txt_total_ep))
-        printLightRed("Tip: Two of your episodes might have been merged into one")
+        print("Total .mkv/.mp4 files counted: {}\nTotal episodes found online: {}".format(txt_total_ep,web_nbr_of_episodes))
+        printLightGrey("Tip: Two of your episodes might have been merged into one")
         printLightGrey("Here is the list of all the episode name:")
 
         for episode in my_show[int(season_number)]:
             printLightGreen(episode)
-        answer = input("Do you want to continue anyways? (y/n) ")
+        answer = input("Do you want to merge the naming of 2 episodes into 1? (y/n) ")
 
         if (answer == "n") or (answer == "N") or (answer == "no"):
             printPink("Renaming process aborted")
             my_file.write("***ERR***"+'\n')
         elif (answer == 'y') or (answer == 'Y') or (answer == 'yes'):
+            (merge1,merge2) = options(int(txt_total_ep), int(web_nbr_of_episodes))
             for episode in my_show[int(season_number)]:
                 my_file.write(episode.title+'\n')
+            if (int(merge1) != 0): # means merge needed
+                my_file.write("***Merge = "+merge1+' '+merge2)
         else:
             printPink("You smart ass... Renaming process aborted")
             my_file.write("***ERR***"+'\n')
@@ -145,6 +177,9 @@ with open ("list_of_episode_names.txt","w") as my_file:
 
 
 
+# improvment : 
+#   - if two episodes have been merged into one then, propose the user to either abort or rename the last file with the 2 last episodes name merged.
+#   or even ask which episodes have been merged and merge the corresponding names.
 
 
 
