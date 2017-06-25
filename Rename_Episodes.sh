@@ -89,32 +89,48 @@ function write_my_txt_file()
     cd $SERIE_FOLDER_PATH
     # same current directory as it entered the funtion
 
+FILE_WITH_EPISODE_NAME_PATH=$(readlink -e $FILE_WITH_EPISODE_NAME)
 
+# Let's store the useful information
+for info in $infos
+do
+    echo $info >> $FILE_WITH_EPISODE_NAME_PATH
+done
 
     # OUTPUT PATH : /xxx/yyy/zzz/Season_Name - Season X
 }
+echo $total_mkv_file >> $FILE_WITH_EPISODE_NAME_PATH
+# At the end :
+# 1st line = Season Name
+# 2nd line = Season N
+# 3rd line = number of episodes (.mkv + mp4 files)
 
 cd $SERIE_FOLDER_PATH
 # Now at /xxx/yyy/zzz/Season_Name - Season X
 write_my_txt_file
+# We save the season Name and Season Number in global variables we'll use later
+SEASON_NAME="$(sed -n 1p $FILE_WITH_EPISODE_NAME_PATH)"
+
+# We don't actually need "Season" of "Season N", only the number matters
+sed -i '2 s/[^0-9]//g' $FILE_WITH_EPISODE_NAME_PATH
+# We want the season number a 2 digit number 02, 05, 10 etc.
+SEASON_NUMBER="$( sed -n 2p $FILE_WITH_EPISODE_NAME_PATH | sed 's/^[1-9]/0&/')"
 
 cd $SCRIPT_FOLDER_PATH
 # Now at /aaa/bbb/ccc/Script_Episode
-./find_name_on_internet.py
 
-# Move the python generated .txt file in the working directory (which contains all the .mkv & .srt files)
-cp $SCRIPT_FOLDER_PATH/$FILE_WITH_EPISODE_NAME $SERIE_FOLDER_PATH
+./find_name_on_internet.py
 
 cd $SERIE_FOLDER_PATH
 # Now at /xxx/yyy/zzz/Season_Name - Season X
 # 
-if [ $(grep -c "\*\*\*New_Name" $FILE_WITH_EPISODE_NAME) -gt 0 ] # if new name to be defined then change it (because of a possible typo in the folder name)
+if [ $(grep -c "\*\*\*New_Name" $FILE_WITH_EPISODE_NAME_PATH) -gt 0 ] # if new name to be defined then change it (because of a possible typo in the folder name)
 then
-    rename_line_number=$( sed -n "/\*\*\*New_Name/=" $FILE_WITH_EPISODE_NAME)
-    SEASON_NAME="$( sed -n ${rename_line_number}p $FILE_WITH_EPISODE_NAME | sed 's/\*\*\*New_Name \= //')"
+    rename_line_number=$( sed -n "/\*\*\*New_Name/=" $FILE_WITH_EPISODE_NAME_PATH)
+    SEASON_NAME="$( sed -n ${rename_line_number}p $FILE_WITH_EPISODE_NAME_PATH | sed 's/\*\*\*New_Name \= //')"
     # delete the line with "***New_Name = xx" that it won't get somehow in the way of renaming process. Shouldn't happen anyway though
-    # sed -i '$d' $FILE_WITH_EPISODE_NAME (That cmd deletes the last line, which is not necesserly ***New_Name, we might have added other info after, later on)
-    sed -i '/\*\*\*New_Name/d' $FILE_WITH_EPISODE_NAME
+    # sed -i '$d' $FILE_WITH_EPISODE_NAME_PATH (That cmd deletes the last line, which is not necesserly ***New_Name, we might have added other info after, later on)
+    sed -i '/\*\*\*New_Name/d' $FILE_WITH_EPISODE_NAME_PATH
     
     cd ..
     # now at /xxx/yyy/zzz/
@@ -123,35 +139,34 @@ then
     mv $PARENT_FOLDER_NAME $new_folder_name
     PARENT_FOLDER_NAME=$new_folder_name
     SERIE_FOLDER_PATH=$(readlink -e $new_folder_name)
-    PARENT_FOLDER_NAME=$new_folder_name
     
     cd $SERIE_FOLDER_PATH
     # now at /xxx/yyy/zzz/Season_Name - Season X (with updated Season_Name)
 fi
 
-if [ $(grep -c "\*\*\*Merge" $FILE_WITH_EPISODE_NAME) -gt 0 ]; then # Means we need to merge 2 episode names into 1
+if [ $(grep -c "\*\*\*Merge" $FILE_WITH_EPISODE_NAME_PATH) -gt 0 ]; then # Means we need to merge 2 episode names into 1
     OPTION="MERGE"
-    find_line_merge=$(sed -n "/\*\*\*Merge/=" $FILE_WITH_EPISODE_NAME) # Get the line number we want to work on
-    sed -i 's/\*\*\*Merge \= //' $FILE_WITH_EPISODE_NAME    # get rid of useless caracters
+    find_line_merge=$(sed -n "/\*\*\*Merge/=" $FILE_WITH_EPISODE_NAME_PATH) # Get the line number we want to work on
+    sed -i 's/\*\*\*Merge \= //' $FILE_WITH_EPISODE_NAME_PATH    # get rid of useless caracters
 
-    ep1=$(sed -n ${find_line_merge}p $FILE_WITH_EPISODE_NAME | cut -d ' ' -f1)
-    ep2=$(sed -n ${find_line_merge}p $FILE_WITH_EPISODE_NAME | cut -d ' ' -f2)
+    ep1=$(sed -n ${find_line_merge}p $FILE_WITH_EPISODE_NAME_PATH | cut -d ' ' -f1)
+    ep2=$(sed -n ${find_line_merge}p $FILE_WITH_EPISODE_NAME_PATH | cut -d ' ' -f2)
 
-    sed -i "${find_line_merge}d" $FILE_WITH_EPISODE_NAME # don't want that line in the file anymore
+    sed -i "${find_line_merge}d" $FILE_WITH_EPISODE_NAME_PATH # don't want that line in the file anymore
 fi
 
-if [ $(grep -c "\*\*\*ERR\*\*\*" $FILE_WITH_EPISODE_NAME) -eq 0 ]; then # if no Error in file
+if [ $(grep -c "\*\*\*ERR\*\*\*" $FILE_WITH_EPISODE_NAME_PATH) -eq 0 ]; then # if no Error in file
 
     # 1st lower case all the caracter in order to work on a simple base
     # 2nd upper case the first letter of the line
     # 3rd upper case all the letter following a "space" caracter
-    sed -i -e 's/[A-Z]/\L&/g' -e 's/^./\U&/g' -e 's/ ./\U&/g' $FILE_WITH_EPISODE_NAME
+    sed -i -e 's/[A-Z]/\L&/g' -e 's/^./\U&/g' -e 's/ ./\U&/g' $FILE_WITH_EPISODE_NAME_PATH
 
 # We now want to rename all the episodes with the same format
 # e.g. Saison Name - 02x13 - Episode Name.mkv(.mp4)(.en.srt)
 # or Saison Name - 02x13&14 - Episode Name + Episode Name.mkv(.mp4)(.en.srt)
     num_episode=1
-    for file in $(ls -v *.mkv *.mp4)
+    for file in $(ls -v *.mkv *.mp4 2> /dev/null)
     do
         if [ $(echo $file | grep -c ".mkv") -gt 0 ]; then
             ext="mkv"
@@ -160,26 +175,26 @@ if [ $(grep -c "\*\*\*ERR\*\*\*" $FILE_WITH_EPISODE_NAME) -eq 0 ]; then # if no 
         fi
 
         if [ $OPTION == "DEFAULT" ]; then
-            EPISODE_NAME="$(sed -n ${num_episode}p $FILE_WITH_EPISODE_NAME).$ext"
+            EPISODE_NAME="$(sed -n ${num_episode}p $FILE_WITH_EPISODE_NAME_PATH).$ext"
             EPISODE_NUMBER="$( printf %02d $num_episode )"
             
-            mv "$file" "$SEASON_NAME - ${SEASON_NUMBER}x$EPISODE_NUMBER - $EPISODE_NAME"
+            mv "$file" "$SEASON_NAME - ${SEASON_NUMBER}x$EPISODE_NUMBER - $EPISODE_NAME" 2> /dev/null
             ((num_episode++))
 
         elif [ $OPTION == "MERGE" ]; then
             if [ $num_episode == $ep1 ]; then
 
-                EPISODE_NAME="$(sed -n ${ep1}p $FILE_WITH_EPISODE_NAME)"
-                EPISODE_NAME="${EPISODE_NAME} + $(sed -n ${ep2}p $FILE_WITH_EPISODE_NAME).$ext"
+                EPISODE_NAME="$(sed -n ${ep1}p $FILE_WITH_EPISODE_NAME_PATH)"
+                EPISODE_NAME="${EPISODE_NAME} + $(sed -n ${ep2}p $FILE_WITH_EPISODE_NAME_PATH).$ext"
                 EPISODE_NUMBER="$( printf %02d"&"%02d $ep1 $ep2)"
                 
-                mv "$file" "$SEASON_NAME - ${SEASON_NUMBER}x$EPISODE_NUMBER - $EPISODE_NAME"
+                mv "$file" "$SEASON_NAME - ${SEASON_NUMBER}x$EPISODE_NUMBER - $EPISODE_NAME" 2> /dev/null
                 num_episode=$(($num_episode+2))
             else
-                EPISODE_NAME="$(sed -n ${num_episode}p $FILE_WITH_EPISODE_NAME).$ext"
+                EPISODE_NAME="$(sed -n ${num_episode}p $FILE_WITH_EPISODE_NAME_PATH).$ext"
                 EPISODE_NUMBER="$( printf %02d $num_episode )"
                 
-                mv "$file" "$SEASON_NAME - ${SEASON_NUMBER}x$EPISODE_NUMBER - $EPISODE_NAME"
+                mv "$file" "$SEASON_NAME - ${SEASON_NUMBER}x$EPISODE_NUMBER - $EPISODE_NAME" 2> /dev/null
                 ((num_episode++))
             fi
 
@@ -193,10 +208,10 @@ if [ $(grep -c "\*\*\*ERR\*\*\*" $FILE_WITH_EPISODE_NAME) -eq 0 ]; then # if no 
         
         for file in $(ls -v *.srt)
         do
-            EPISODE_NAME="$(sed -n ${num_episode}p $FILE_WITH_EPISODE_NAME).$ext"
+            EPISODE_NAME="$(sed -n ${num_episode}p $FILE_WITH_EPISODE_NAME_PATH).$ext"
             EPISODE_NUMBER="$( printf %02d $num_episode )"
         
-            mv "$file" "$SEASON_NAME - ${SEASON_NUMBER}x$EPISODE_NUMBER - $EPISODE_NAME"
+            mv "$file" "$SEASON_NAME - ${SEASON_NUMBER}x$EPISODE_NUMBER - $EPISODE_NAME" 2> /dev/null
             ((num_episode++))
         done
 
@@ -208,18 +223,7 @@ if [ $(grep -c "\*\*\*ERR\*\*\*" $FILE_WITH_EPISODE_NAME) -eq 0 ]; then # if no 
 fi
 
 
-
-rm $FILE_WITH_EPISODE_NAME
-
-# For some unknown reasons, if : 
-#   - There is a typo in the folder name AND the wrong amount of file compared to the amount of episodes found on internet
-#   - The folowing 'rm' command is used without the -f option 
-# Then .txt file will be removed but will still appear in the folder... (trying to open it will raise an Error saying : file can't be found)
-# force option solves that problem.
-# 
-# Somehow adding a "sleep 1" command before prevent that error and allows the rm command without -f option
-# It is probably because of a parallel threading of "finder" execution. Makes sens but I have no idea how to prove it though
-rm $SCRIPT_FOLDER_PATH/$FILE_WITH_EPISODE_NAME
+rm $FILE_WITH_EPISODE_NAME_PATH
 
 
 
