@@ -106,10 +106,8 @@ cd $SERIE_FOLDER_PATH
 # 
 if [ $(grep -c "\*\*\*New_Name" $FILE_WITH_EPISODE_NAME_PATH) -gt 0 ] # if new name to be defined then change it (because of a possible typo in the folder name)
 then
-    rename_line_number=$( sed -n "/\*\*\*New_Name/=" $FILE_WITH_EPISODE_NAME_PATH)
-    SEASON_NAME="$( sed -n ${rename_line_number}p $FILE_WITH_EPISODE_NAME_PATH | sed 's/\*\*\*New_Name \= //')"
-    # delete the line with "***New_Name = xx" that it won't get somehow in the way of renaming process. Shouldn't happen anyway though
-    # sed -i '$d' $FILE_WITH_EPISODE_NAME_PATH (That cmd deletes the last line, which is not necesserly ***New_Name, we might have added other info after, later on)
+    SEASON_NAME="$( grep "\*\*\*New_Name" $FILE_WITH_EPISODE_NAME_PATH | sed 's/\*\*\*New_Name \= //')"
+
     sed -i '/\*\*\*New_Name/d' $FILE_WITH_EPISODE_NAME_PATH
     
     cd ..
@@ -126,13 +124,12 @@ fi
 
 if [ $(grep -c "\*\*\*Merge" $FILE_WITH_EPISODE_NAME_PATH) -gt 0 ]; then # Means we need to merge 2 episode names into 1
     OPTION="MERGE"
-    find_line_merge=$(sed -n "/\*\*\*Merge/=" $FILE_WITH_EPISODE_NAME_PATH) # Get the line number we want to work on
-    sed -i 's/\*\*\*Merge \= //' $FILE_WITH_EPISODE_NAME_PATH    # get rid of useless caracters
+    
+    ep1=$(grep "\*\*\*Merge" $FILE_WITH_EPISODE_NAME_PATH | sed 's/\*\*\*Merge \= //' | cut -d ' ' -f1)
+    ep2=$(grep "\*\*\*Merge" $FILE_WITH_EPISODE_NAME_PATH | sed 's/\*\*\*Merge \= //' | cut -d ' ' -f2)
 
-    ep1=$(sed -n ${find_line_merge}p $FILE_WITH_EPISODE_NAME_PATH | cut -d ' ' -f1)
-    ep2=$(sed -n ${find_line_merge}p $FILE_WITH_EPISODE_NAME_PATH | cut -d ' ' -f2)
+    sed -i '/\*\*\*Merge/d' $FILE_WITH_EPISODE_NAME_PATH # don't want that line in the file anymore
 
-    sed -i "${find_line_merge}d" $FILE_WITH_EPISODE_NAME_PATH # don't want that line in the file anymore
 fi
 
 if [ $(grep -c "\*\*\*ERR\*\*\*" $FILE_WITH_EPISODE_NAME_PATH) -eq 0 ]; then # if no Error in file
@@ -142,9 +139,9 @@ if [ $(grep -c "\*\*\*ERR\*\*\*" $FILE_WITH_EPISODE_NAME_PATH) -eq 0 ]; then # i
     # 3rd upper case all the letter following a "space" caracter
     sed -i -e 's/[A-Z]/\L&/g' -e 's/^./\U&/g' -e 's/ ./\U&/g' $FILE_WITH_EPISODE_NAME_PATH
 
-# We now want to rename all the episodes with the same format
-# e.g. Saison Name - 02x13 - Episode Name.mkv(.mp4)(.en.srt)
-# or Saison Name - 02x13&14 - Episode Name + Episode Name.mkv(.mp4)(.en.srt)
+    # We now want to rename all the episodes with the same format
+    # e.g. Saison Name - 02x13 - Episode Name.mkv(.mp4)(.en.srt)
+    # or Saison Name - 02x13&14 - Episode Name + Episode Name.mkv(.mp4)(.en.srt)
     num_episode=1
     for file in $(ls -v *.mkv *.mp4 2> /dev/null)
     do
