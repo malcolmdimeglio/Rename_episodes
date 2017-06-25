@@ -101,7 +101,6 @@ def options (mkv_nbr, web_nbr):
                 input_list[1], input_list[0] = input_list[0], input_list[1]
             return (input_list[0], input_list[1])
     #else: # remind that the exciding files wont be renamed
-    #
 
 
 
@@ -159,7 +158,7 @@ with open ("list_of_episode_names.txt","w") as my_file:
             for episode in my_show[int(season_number)]:
                 my_file.write(episode.title+'\n')
             if (int(merge1) != 0): # means merge needed
-                my_file.write("***Merge = "+merge1+' '+merge2)
+                my_file.write("***Merge = "+merge1+' '+merge2+'\n')
         else:
             printPink("You smart ass... Renaming process aborted")
             my_file.write("***ERR***"+'\n')
@@ -173,13 +172,6 @@ with open ("list_of_episode_names.txt","w") as my_file:
         my_file.write("***New_Name = "+my_show.name+'\n')
         print("\033[96mBe careful there was a typo in your folder name, it was \"{}\" instead of \"{}\"\nI corrected it for you\033[00m".format(season_name,my_show.name))
 
-
-
-
-
-# improvment : 
-#   - if two episodes have been merged into one then, propose the user to either abort or rename the last file with the 2 last episodes name merged.
-#   or even ask which episodes have been merged and merge the corresponding names.
 
 
 
