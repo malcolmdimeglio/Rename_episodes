@@ -114,7 +114,8 @@ then
     # now at /xxx/yyy/zzz/
     new_folder_name="$SEASON_NAME - Season $(echo $SEASON_NUMBER | sed 's/0\([1-9]\)/\1/')"
 
-    mv $PARENT_FOLDER_NAME $new_folder_name
+    mv $PARENT_FOLDER_NAME $new_folder_name 2> /dev/null
+    # Since MacOS is NOT case sensitive we might get an error if the online case's name differs from the local one ... so we use : 2> /dev/null
     PARENT_FOLDER_NAME=$new_folder_name
     SERIE_FOLDER_PATH=$(readlink -e $new_folder_name)
     
