@@ -94,7 +94,7 @@ SEASON_NAME="$(sed -n 1p $FILE_WITH_EPISODE_NAME_PATH)"
 # We don't actually need "Season" of "Season N", only the number matters
 sed -i '2 s/[^0-9]//g' $FILE_WITH_EPISODE_NAME_PATH
 # We want the season number a 2 digit number 02, 05, 10 etc.
-SEASON_NUMBER="$( sed -n 2p $FILE_WITH_EPISODE_NAME_PATH | sed 's/^[1-9]/0&/')"
+SEASON_NUMBER=$(printf %02d $(sed -n 2p $FILE_WITH_EPISODE_NAME_PATH))
 
 cd $SCRIPT_FOLDER_PATH
 # Now at /aaa/bbb/ccc/Script_Episode
