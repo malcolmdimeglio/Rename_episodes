@@ -77,7 +77,7 @@ The program will exit. You must take care of the problem then run the script aga
 
 - **The total amount of episode in the folder differs from the number of episode found online**
 
-You will be shown all the episodes found online, and ask what kind of action you want to do depending if you have more or less files than the actual number episodes.
+You will be shown all the episodes found online, and ask what kind of action you want to do. It will depend on whether you have more or less files than the real number of episodes.
 ```
 /!\ Be careful! The number of episodes you have doesn't match the actual number of episode in this TV show
 Total .mkv/.mp4 files counted: 2
