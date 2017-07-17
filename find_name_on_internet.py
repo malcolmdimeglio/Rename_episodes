@@ -100,7 +100,8 @@ def options (mkv_nbr, web_nbr):
             if (int(input_list[0]) > int(input_list[1])):
                 input_list[1], input_list[0] = input_list[0], input_list[1]
             return (input_list[0], input_list[1])
-    #else: # remind that the exciding files wont be renamed
+    else: # remind that the exciding files wont be renamed
+        return (0,0)
 
 
 
@@ -141,14 +142,20 @@ with open ("list_of_episode_names.txt","w") as my_file:
 
     # if the total episode number in the folder is different from the number of episode found on internet 
     if int (txt_total_ep) != web_nbr_of_episodes:
-        printLightRed("/!\\ Be careful! The number of episodes you have doesn't match the actual number of episode in this TV show")
+        printLightRed("\n\r/!\\ Be careful! The number of episodes you have doesn't match the actual number of episode in this TV show")
         print("Total .mkv/.mp4 files counted: {}\nTotal episodes found online: {}".format(txt_total_ep,web_nbr_of_episodes))
-        printLightGrey("Tip: Two of your episodes might have been merged into one")
+        if int (txt_total_ep) < web_nbr_of_episodes:
+            printLightGrey("Tip: Two of your episodes might have been merged into one")
+        else:
+            printLightGrey("Tip: Check if there isn't any 'special Christmas' kind of episode that sliped in your folder")
         printLightGrey("Here is the list of all the episode name:")
 
         for episode in my_show[int(season_number)]:
             printLightGreen(episode)
-        answer = input("Do you want to merge the naming of 2 episodes into 1? (y/n) ")
+        if int (txt_total_ep) < web_nbr_of_episodes:
+            answer = input("Do you want to merge the naming of 2 episodes into 1? (y/n) ")
+        else:
+            answer = input("Do you want to continue the naming process? (the last "+str(int(txt_total_ep) - web_nbr_of_episodes)+" episodes won't be properly renamed) (y/n) ")
 
         if (answer == "n") or (answer == "N") or (answer == "no"):
             printPink("Renaming process aborted")
