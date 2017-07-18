@@ -1,33 +1,5 @@
 #!/bin/bash
 
-#######################
-# Overall description #
-#######################
-
-# This code will rename : - the main folder "SEASON_NAME - Season X" if there is a typo in the Season Name
-#                         - all the .mkv & .mp4 file as follows "Saison Name - 02x13 - Episode Name.mkv(.mp4)"
-#                         - all the .srt file as follows "Saison Name - 02x13 - Episode Name.en.srt"
-# 
-# In order to work properly an API needs to be installed (to get the season's informations)
-# but also the GNU sed wich is not a built in feature on MacOS, as well as the gnu version of readlink:
-# The following commands will get you the right setup
-# You will also need python3 installed
-# 
-#  brew install coreutils
-#  brew install -with-default-names gnu-sed
-#  pip install pytvmaze (could need a 'pip install --upgrade pytvmaze')
-#  
-# coreutils gets you the linux like command greadlink which work as readlink.
-#  
-#  modify .bash_profile and add the following lines
-#  # enable Homebrew coreutils
-#    export PATH="/usr/local/opt/coreutils/libexec/gnubin:$PATH"
-#    export MANPATH="/usr/local/opt/coreutils/libexec/gnuman:$MANPATH"
-#    
-# These lines will allow you to use all coreutils command lines without the need to add 'g' before. 
-# Adding it to the path alows you not to take care of it anymore and use GNU commands.
-# 
-
 
 # Usually, the folder used to put all the .mkv and .srt file in, is named as followed : Season_name - Season X
 # With X a number (2, 5, 10 etc.)
