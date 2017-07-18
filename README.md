@@ -143,8 +143,8 @@ Rename the 2 folders:
 
 Run these lines to start testing.
 ```bash
-./Rename_episodes Tests/Homeland\ -\ Season\ 5
-./Rename_episodes Tests/Incorporated\ -\ Season\ 1
+./Rename_episodes.sh Tests/Homeland\ -\ Season\ 5
+./Rename_episodes.sh Tests/Incorporated\ -\ Season\ 1
 ```
 
 ## Word of the programmer
