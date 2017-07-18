@@ -3,20 +3,32 @@
 
 ## Goal
 
- - Rename all the .mkv .mp4 & .srt files with a common pattern
+ - Rename all the .mkv .mp4 & .srt files from a given folder with a common pattern
  - Rename the main folder if there is a typo in the Season Name
 
 ## Installation instruction
 You will need python 3 installed. This script won't run with Python 2.
 Both Bash & Python languages are used here.
 
+```bash
+$ apt-get install python3
+```
 ### API Installation
 
 You will need an API to get the season's information
 ```bash
-$ pip install pytvmaze
+$ pip3 install pytvmaze
 ```
 See README here: https://github.com/srob650/pytvmaze
+
+### For Linux users
+You don't need specific actions to run the script. Although, if you get the following error `ImportError: cannot import pytvmaze` it probably means you've installed the module under Python2.
+To solve this problem:
+
+```bash
+mv /usr/local/lib/python2.X/dist-packages/pytvmaze /usr/local/lib/python3.Y/dist-packages/pytvmaze
+```
+Replace 'X' and 'Y' with your versions of pythons.
 
 ### For OSX users
 Coreutils package is not a built-in feature on OSX.
@@ -40,7 +52,7 @@ export MANPATH="/usr/local/opt/coreutils/libexec/gnuman:$MANPATH"
 ./Rename_Episodes.sh /Users/Toto/Desktop/Black\ Mirror\ -\ Season\ 2
 ```
 The script can allow either absolute or relative path as a parameter.
-The folder name MUST HAVE the following name structure: '[SeasonName] - [Season SeasonNumber]'
+The folder name **MUST HAVE** the following name structure: '[SeasonName] - [Season SeasonNumber]'
 
 The 2 white spaces around the dash are important.
 White spaces in the SeasonName are allowed
@@ -61,6 +73,23 @@ Be careful there was a typo in your folder name, it was "Blck Mirror" instead of
 I corrected it for you
 ```
 Then, your folder's name will be changed automatically
+
+*Input example*
+```
+|- Tree
+   |- Blck Mirror - Season 2
+      |- Black.Mirror.S01E01.1080p.WEB-DL-Special.mkv
+      |- Black.Mirror.S01E02.1080p.WEB-DL-Special.mkv
+      |- Black.Mirror.S01E03.1080p.WEB-DL-Special.mkv
+```
+*Output example*
+```
+|- Tree
+   |- Black Mirror - Season 2
+      |- Black Mirror - 01x01 - Be Right Back.mkv
+      |- Black Mirror - 01x02 - Fifteen Million Merits.mkv
+      |- Black Mirror - 01x03 - The Waldo Moment.mkv
+```
 
 If the typo is too big then you'll get the following result
 ```
