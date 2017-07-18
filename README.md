@@ -74,7 +74,7 @@ I corrected it for you
 ```
 Then, your folder's name will be changed automatically
 
-*Input example*
+*Before*
 ```
 .
 └── Blck Mirror - Season 2
@@ -82,7 +82,7 @@ Then, your folder's name will be changed automatically
     ├── Black.Mirror.S01E02.1080p.WEB-DL-Special.mkv
     └── Black.Mirror.S01E03.1080p.WEB-DL-Special.mkv
 ```
-*Output example*
+*After*
 ```
 .
 └── Black Mirror - Season 2
@@ -125,3 +125,32 @@ If your answer is 'y' you will be asked which episodes' name you want to merge. 
 `List the episodes' number you want to merge, separated by spaces: 2 3`
 
 Your episode will be renamed as such: Black Mirror - 02x02&03 - White Bear + The Waldo Moment.mkv
+
+## Testng
+To have a preview of how this script works, you can use the Tests folder. You will find 2 other folders you will need to rename. (Make a copy first if you want to make several attempt and play with the limitation of the script)
+
+Inside those folders are fake .mkv and .srt files. In the Homeland folder, you can open the files with a text editor. For instance, you will be able to read *episode1* for the 1st episode of the season and *Sous titre de l’épisode 1* for the subtitle of the 1st episode. All 12 .mkv and .srt files have these info. (I'll translate that last one to english - one day)
+
+This will allow you to double check after runing the script that none of the names have been mixed up during the process.
+
+Rename the 2 folders:
+* Homeland - Season 5
+* Incorporated - Season 1
+
+* The Homeland folder contains no mistakes. (You can add a typo if you feel the need to test it : 'Homelnd - Season 5' or whichever you want)
+* The Incorporated folder contains 9 episodes instead of 10. The 9th episode is the season finale, so it actually is both 9th and 10th episode merged.
+
+Run these lines to start testing.
+```bash
+./Rename_episodes Tests/Homeland\ -\ Season\ 5
+./Rename_episodes Tests/Incorporated\ -\ Season\ 1
+```
+
+## Word of the programmer
+* If you use this code properly and what it is made for, it will work like a charm.
+* If you find some flaws, please share them. I'll modify my code if I feel the need.
+* It is of course possible to improve the script, make it bigger, add more information, but as for my own use, that's all I need.
+
+
+
+
