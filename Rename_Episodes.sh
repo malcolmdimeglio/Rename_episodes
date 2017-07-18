@@ -1,9 +1,9 @@
 #!/bin/bash
 
 
-# Usually, the folder used to put all the .mkv and .srt file in, is named as followed : Season_name - Season X
+# Usually, the folder used to put all the .mkv/.mp4/.aviand .srt file in, is named as followed : Season_name - Season X
 # With X a number (2, 5, 10 etc.)
-# In order to make the work easier for the python script, we want to save in a text file the name of the Serie, its season number and how many episode (.mkv & .mp4 file) there is.
+# In order to make the work easier for the python script, we want to save in a text file the name of the Serie, its season number and how many episode (.mkv & .mp4 & .avi file) there is.
 # This function will create a .txt file with these 3 information thanks to the main folder name and the files it contains.
 # The python scrpit will then extract these information and work from there.
 
@@ -29,15 +29,15 @@ cd $SERIE_FOLDER_PATH
 # Now at /xxx/yyy/zzz/Season_Name - Season X
 
 # Get the name of the main folder we want to extract the informations of. (here : Season_Name - Season X)
-# This folder contains all the .mkv/.mp4 and .srt
+# This folder contains all the .mkv/.mp4/.avi and .srt
 PARENT_FOLDER_NAME=$(basename $(readlink -e .))
 
 # Now truncate both sides of the folder's name and store the result
 infos=$(echo $PARENT_FOLDER_NAME | sed 's/\ \-\ /\n/g')
-# We want the number of .mkv + .mp4 file stored. This will help in case two episodes have been merged into one.
+# We want the number of .mkv + .mp4 + .avifile stored. This will help in case two episodes have been merged into one.
 # whereas on internet they may appear as two different ones. 
 # We will store that value in the .txt file later, then the python script will check the accuracy and prevent shifting in naming.
-total_mkv_file=$(ls *.mkv *.mp4 2> /dev/null | wc -l | sed 's/\t//')
+total_mkv_file=$(ls *.mkv *.mp4 *.avi 2> /dev/null | wc -l | sed 's/\t//')
 
 cd $SCRIPT_FOLDER_PATH
 # now at /aaa/bbb/ccc/Script_Episode
@@ -58,7 +58,7 @@ echo $total_mkv_file >> $FILE_WITH_EPISODE_NAME_PATH
 # At the end :
 # 1st line = Season Name
 # 2nd line = Season N
-# 3rd line = number of episodes (.mkv + mp4 files)
+# 3rd line = number of episodes (.mkv + mp4 + avi files)
 
 # We save the season Name and Season Number in global variables we'll use later
 SEASON_NAME="$(sed -n 1p $FILE_WITH_EPISODE_NAME_PATH)"
@@ -113,15 +113,17 @@ if [ $(grep -c "\*\*\*ERR\*\*\*" $FILE_WITH_EPISODE_NAME_PATH) -eq 0 ]; then # i
     sed -i -e 's/[A-Z]/\L&/g' -e 's/^./\U&/g' -e 's/ ./\U&/g' $FILE_WITH_EPISODE_NAME_PATH
 
     # We now want to rename all the episodes with the same format
-    # e.g. Saison Name - 02x13 - Episode Name.mkv(.mp4)(.en.srt)
-    # or Saison Name - 02x13&14 - Episode Name + Episode Name.mkv(.mp4)(.en.srt)
+    # e.g. Saison Name - 02x13 - Episode Name.mkv(.mp4)(.avi)(.en.srt)
+    # or Saison Name - 02x13&14 - Episode Name + Episode Name.mkv(.mp4)(.avi)(.en.srt)
     num_episode=1
-    for file in $(ls -v *.mkv *.mp4 2> /dev/null)
+    for file in $(ls -v *.mkv *.mp4 *.avi 2> /dev/null)
     do
         if [ $(echo $file | grep -c ".mkv") -gt 0 ]; then
             ext="mkv"
         elif [ $(echo $file | grep -c ".mp4") -gt 0 ]; then
             ext="mp4"
+        elif [ $(echo $file | grep -c ".avi") -gt 0 ]; then
+            ext="avi"
         fi
 
         if [ $OPTION == "DEFAULT" ]; then
@@ -165,7 +167,7 @@ if [ $(grep -c "\*\*\*ERR\*\*\*" $FILE_WITH_EPISODE_NAME_PATH) -eq 0 ]; then # i
             ((num_episode++))
         done
 
-        # Hightly improbable to find 2 merged episodes (.mkv/.mp4) with 2 merged .srt files. If there are subtitles with this show,
+        # Hightly improbable to find 2 merged episodes (.mkv/.mp4/.avi) with 2 merged .srt files. If there are subtitles with this show,
         # there are most likely hardcoded or available through the menu.
 
     fi
