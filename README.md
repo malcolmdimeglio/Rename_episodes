@@ -126,7 +126,7 @@ If your answer is 'y' you will be asked which episodes' name you want to merge. 
 
 Your episode will be renamed as such: Black Mirror - 02x02&03 - White Bear + The Waldo Moment.mkv
 
-## Testng
+## Testing
 To have a preview of how this script works, you can use the Tests folder. You will find 2 other folders you will need to rename. (Make a copy first if you want to make several attempt and play with the limitation of the script)
 
 Inside those folders are fake .mkv and .srt files. In the Homeland folder, you can open the files with a text editor. For instance, you will be able to read *episode1* for the 1st episode of the season and *Sous titre de l’épisode 1* for the subtitle of the 1st episode. All 12 .mkv and .srt files have these info. (I'll translate that last one to english - one day)
@@ -134,11 +134,12 @@ Inside those folders are fake .mkv and .srt files. In the Homeland folder, you c
 This will allow you to double check after runing the script that none of the names have been mixed up during the process.
 
 Rename the 2 folders:
+
 * Homeland - Season 5
 * Incorporated - Season 1
 
-* The Homeland folder contains no mistakes. (You can add a typo if you feel the need to test it : 'Homelnd - Season 5' or whichever you want)
-* The Incorporated folder contains 9 episodes instead of 10. The 9th episode is the season finale, so it actually is both 9th and 10th episode merged.
+- The Homeland folder contains no mistakes. (You can add a typo if you feel the need to test it : 'Homelnd - Season 5' or whichever you want)
+- The Incorporated folder contains 9 episodes instead of 10. The 9th episode is the season finale, so it actually is both 9th and 10th episode merged.
 
 Run these lines to start testing.
 ```bash
