@@ -28,7 +28,7 @@ To solve this problem:
 ```bash
 mv /usr/local/lib/python2.X/dist-packages/pytvmaze /usr/local/lib/python3.Y/dist-packages/pytvmaze
 ```
-Replace 'X' and 'Y' with your versions of pythons.
+Replace 'X' and 'Y' with your versions of python.
 
 ### For OSX users
 Coreutils package is not a built-in feature on OSX.
@@ -76,19 +76,19 @@ Then, your folder's name will be changed automatically
 
 *Input example*
 ```
-|- Tree
-   |- Blck Mirror - Season 2
-      |- Black.Mirror.S01E01.1080p.WEB-DL-Special.mkv
-      |- Black.Mirror.S01E02.1080p.WEB-DL-Special.mkv
-      |- Black.Mirror.S01E03.1080p.WEB-DL-Special.mkv
+.
+└── Blck Mirror - Season 2
+    ├── Black.Mirror.S01E01.1080p.WEB-DL-Special.mkv
+    ├── Black.Mirror.S01E02.1080p.WEB-DL-Special.mkv
+    └── Black.Mirror.S01E03.1080p.WEB-DL-Special.mkv
 ```
 *Output example*
 ```
-|- Tree
-   |- Black Mirror - Season 2
-      |- Black Mirror - 01x01 - Be Right Back.mkv
-      |- Black Mirror - 01x02 - Fifteen Million Merits.mkv
-      |- Black Mirror - 01x03 - The Waldo Moment.mkv
+.
+└── Black Mirror - Season 2
+    ├── Black Mirror - 01x01 - Be Right Back.mkv
+    ├── Black Mirror - 01x02 - Fifteen Million Merits.mkv
+    └── Black Mirror - 01x03 - The Waldo Moment.mkv
 ```
 
 If the typo is too big then you'll get the following result
