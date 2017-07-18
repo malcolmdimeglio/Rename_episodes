@@ -103,6 +103,15 @@ def options (mkv_nbr, web_nbr):
     else: # remind that the exciding files wont be renamed
         return (0,0)
 
+def ask_yes_no_question (question):
+    answer = input(question+" (y/n)")
+    if (answer == "n") or (answer == "N") or (answer == "no") or (answer == "NO"):
+        return 0
+    elif (answer == 'y') or (answer == 'Y') or (answer == 'yes') or (answer == 'YES'):
+        return 1
+    else:
+        printPink("You smart ass... this is a yes/no question")
+        ask_yes_no_question (question)
 
 
 with open ("list_of_episode_names.txt","r") as my_file:
@@ -153,22 +162,22 @@ with open ("list_of_episode_names.txt","w") as my_file:
         for episode in my_show[int(season_number)]:
             printLightGreen(episode)
         if int (txt_total_ep) < web_nbr_of_episodes:
-            answer = input("Do you want to merge the naming of 2 episodes into 1? (y/n) ")
+            answer = ask_yes_no_question("Do you want to merge the naming of 2 episodes into 1?")
+            #answer = input("Do you want to merge the naming of 2 episodes into 1? (y/n) ")
         else:
-            answer = input("Do you want to continue the naming process? (the last "+str(int(txt_total_ep) - web_nbr_of_episodes)+" episodes won't be properly renamed) (y/n) ")
+            answer = ask_yes_no_question("Do you want to continue the naming process? (the last "+str(int(txt_total_ep) - web_nbr_of_episodes)+" episode(s) won't be properly renamed)")
+            #answer = input("Do you want to continue the naming process? (the last "+str(int(txt_total_ep) - web_nbr_of_episodes)+" episode(s) won't be properly renamed) (y/n) ")
 
-        if (answer == "n") or (answer == "N") or (answer == "no"):
-            printPink("Renaming process aborted")
-            my_file.write("***ERR***"+'\n')
-        elif (answer == 'y') or (answer == 'Y') or (answer == 'yes'):
+        if answer:
             (merge1,merge2) = options(int(txt_total_ep), int(web_nbr_of_episodes))
             for episode in my_show[int(season_number)]:
                 my_file.write(episode.title+'\n')
             if (int(merge1) != 0): # means merge needed
                 my_file.write("***Merge = "+merge1+' '+merge2+'\n')
-        else:
-            printPink("You smart ass... Renaming process aborted")
+        elif not answer:
+            printPink("Renaming process aborted")
             my_file.write("***ERR***"+'\n')
+
             
     else:
         for episode in my_show[int(season_number)]:
