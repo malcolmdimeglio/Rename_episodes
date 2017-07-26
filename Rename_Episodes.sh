@@ -16,9 +16,119 @@ FILE_WITH_EPISODE_NAME_PATH=""
 SEASON_NAME=""
 SEASON_NUMBER=""
 PARENT_FOLDER_NAME=""
-SERIE_FOLDER_PATH=$(readlink -e $1)
 OPTION="DEFAULT"
+OS=`uname`
 
+if [ $OS == "Darwin" ]; then # macOS
+
+    # Check if packages installation are already done
+    if [ $(ls "/usr/local/" | grep -c "Homebrew") -eq 0 ]; then
+        echo "'Homebrew' package is not installed on your computer. You will need it to run this scrpit, install the API and so on."
+        until [[ $answer == "y" || $answer == "Y" || $answer == "n" || $answer == "N" ]]; do
+            echo "Do you want to install it now? (y/n)"
+            read answer
+        done
+
+        case $answer in
+            "y"|"Y")
+                exec ruby -e "$(curl -fsSL https://raw.githubusercontent.com/Homebrew/install/master/install)"
+                wait
+                export PATH=/usr/local/bin:/usr/local/sbin:$PATH
+                ;;
+            "n"|"N")
+                echo "Sorry you can't run this scrpit. Please get a proper setup"
+                exit
+                ;;
+        esac
+    fi
+
+    if [ $(ls "/usr/local/Cellar" | grep -c "coreutils") -eq 0 ]; then
+        echo "'coreutils' package is not installed on your computer. You will need it to run this script."
+        until [[ $answer == "y" || $answer == "Y" || $answer == "n" || $answer == "N" ]]; do
+            echo "Do you want to install it now? (y/n)"
+            read answer
+        done
+
+        case $answer in
+            "y"|"Y")
+                exec bash -c "brew install coreutils" &
+                wait
+                if [ $(cat ~/.bash_profile | grep -c "coreutils") -eq 0 ]; then
+                    echo "# enable Homebrew coreutils" >> ~/.bash_profile
+                    echo "export PATH=\"/usr/local/opt/coreutils/libexec/gnubin:\$PATH\"" >> ~/.bash_profile
+                    echo "export MANPATH=\"/usr/local/opt/coreutils/libexec/gnuman:\$MANPATH\"" >> ~/.bash_profile
+                fi
+                PATH=/usr/local/opt/coreutils/libexec/gnubin:$PATH # That we don't need to close then open a new terminal prompt to finish the job
+                ;;
+            "n"|"N")
+                echo "Sorry you can't run this scrpit. Please get a proper setup"
+                exit
+                ;;
+        esac
+    fi
+
+    if [ $(ls "/usr/local/Cellar" | grep -c "gnu-sed") -eq 0 ]; then
+        echo "'gnu-sed' package is not installed on your computer. You will need it to run this script."
+        until [[ $answer == "y" || $answer == "Y" || $answer == "n" || $answer == "N" ]]; do
+            echo "Do you want to install it now? (y/n)"
+            read answer
+        done
+
+        case $answer in
+            "y"|"Y")
+                exec bash -c "brew install gnu-sed --with-default-names" &
+                wait
+                ;;
+            "n"|"N")
+                echo "Sorry you can't run this scrpit. Please get a proper setup"
+                exit
+                ;;
+        esac
+    fi
+
+    if [ $(ls "/usr/local/bin" | grep -c "python3") -eq 0 ]; then
+        echo "'Python 3' is not installed on your computer. You will need it to run this scrpit."
+        until [[ $answer == "y" || $answer == "Y" || $answer == "n" || $answer == "N" ]]; do
+            echo "Do you want to install it now? (y/n)"
+            read answer
+        done
+
+        case $answer in
+            "y"|"Y")
+                exec bash -c "brew install python3"
+                wait
+                ;;
+            "n"|"N")
+                echo "Sorry you can't run this scrpit. Please get a proper setup"
+                exit
+                ;;
+        esac
+    fi
+
+        path_to_api=$(find /Library/Frameworks/Python.framework/Versions/ -name "pytvmaze")
+
+    if [[ $path_to_api == "" ]]; then
+        echo "'pytvmaze' is not installed on your computer. You will need this API to run this scrpit."
+        until [[ $answer == "y" || $answer == "Y" || $answer == "n" || $answer == "N" ]]; do
+            echo "Do you want to install it now? (y/n)"
+            read answer
+        done
+
+        case $answer in
+            "y"|"Y")
+                exec bash -c "pip3 install pytvmaze"
+                wait
+                ;;
+            "n"|"N")
+                echo "Sorry you can't run this scrpit. Please get a proper setup"
+                exit
+                ;;
+        esac
+    fi
+            
+fi
+
+SERIE_FOLDER_PATH=$(readlink -e $1)
 
 if [ "$SERIE_FOLDER_PATH" == "" ]; then
     echo "Couldn't find the folder \"$1\". Look for tipos"
