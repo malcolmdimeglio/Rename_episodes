@@ -10,6 +10,12 @@
 
 IFS=$'\n'   #Input Field Separator
 
+
+CODE_OK=0
+CODE_REFUSE_INSTALLATION=1
+CODE_ERR_PCKG_INSTALL=2
+CODE_NO_XCODE=3
+
 SCRIPT_FOLDER_PATH=$PWD
 FILE_WITH_EPISODE_NAME="list_of_episode_names.txt"
 FILE_WITH_EPISODE_NAME_PATH=""
@@ -18,7 +24,8 @@ SEASON_NUMBER=""
 PARENT_FOLDER_NAME=""
 OPTION="DEFAULT"
 
-./check_config.sh
+rm *.log 2> /dev/null #erase all log files from previous use
+
 
 if [ $? == 2 ]; then
     exit

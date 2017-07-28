@@ -1,5 +1,11 @@
 #!/bin/bash
 
+
+CODE_OK=0
+CODE_NO_INSTALLATION=1
+CODE_ERR_PCKG_INSTALL=2
+CODE_NO_XCODE=3
+
 OS=`uname`
 INSTALL=""
 
@@ -9,7 +15,7 @@ echo "Package installation checking..."
 if [ $OS == "Darwin" ]; then # macOS
 
     if [[ $(find -d /Library/Developer -name "CommandLineTools" 2> /dev/null) == "" ]]; then
-        INSTALL="$INSTALL Xcode"
+        exit $CODE_NO_XCODE
     fi
     if [ $(ls "/usr/local/" 2> /dev/null | grep -c "Homebrew") -eq 0 ]; then
         INSTALL="$INSTALL Homebrew"
@@ -30,7 +36,7 @@ if [ $OS == "Darwin" ]; then # macOS
 
     if [[ $INSTALL == "" ]]; then
         echo "System up to date"
-        exit 1
+        exit $CODE_OK
     else
         echo "$INSTALL need(s) to be installed first"
         until [[ $answer == "y" || $answer == "Y" || $answer == "n" || $answer == "N" ]]; do
@@ -38,8 +44,7 @@ if [ $OS == "Darwin" ]; then # macOS
             read answer
         done
         if [[ $answer == "n" || $answer == "N" ]];then
-            echo "Sorry you can't run this scrpit. Please get a proper setup and run the script again"
-            exit 2
+            exit $CODE_NO_INSTALLATION
         fi
     fi
 fi
@@ -55,7 +60,17 @@ if [ $OS == "Linux" ];then
     fi
 fi
 
+./install.sh $OS "$INSTALL"
+ret=$?
 
-    osascript  -e 'do shell script "open -a Terminal ."' -e 'tell application "Terminal" to do script "./install.sh '" ${OS} '$INSTALL' "' " in selected tab of the front window' > /dev/null
-    echo "Installation success"
+if [ $ret == 0 ]; then
+    echo -e "Installation success\n"
+    exit $CODE_OK
+else
+    echo -e "Installation fail\n"
+    exit $CODE_ERR_PCKG_INSTALL
 fi
+
+
+
+
