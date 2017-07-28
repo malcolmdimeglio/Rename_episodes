@@ -10,6 +10,10 @@
 
 IFS=$'\n'   #Input Field Separator
 
+RED='\033[0;31m'
+GREEN='\033[0;32m'
+BLUE='\033[0;36m'
+NC='\033[0m' # No Color
 
 CODE_OK=0
 CODE_REFUSE_INSTALLATION=1
@@ -27,14 +31,34 @@ OPTION="DEFAULT"
 rm *.log 2> /dev/null #erase all log files from previous use
 
 
-if [ $? == 2 ]; then
+./check_config.sh
+ret=$?
+
+if [ $ret == $CODE_REFUSE_INSTALLATION ]; then
+    echo -e "${RED}Sorry you can't run this scrpit. Please get a proper setup and run the script again"
+    echo "You can read the log files if there was an error during the installation"
+    echo "If there is no log file then, the installation went fine and the problem came from somthing else"
+    echo "The episodes didn't get renamed"
+    echo -e "Bye-e ${NC}"
+    echo ""
+    exit
+elif [ $ret == $CODE_ERR_PCKG_INSTALL ]; then
+    echo -e "${RED}Something went wrong during a package installation"
+    echo "this script can't rename the files without all packages installed"
+    echo "The episodes didn't get renamed"
+    echo -e "Bye${NC}"
+    echo ""
+    exit
+elif [ $ret == $CODE_NO_XCODE ]; then
+    echo -e "${BLUE}Please install 'Xcode Command Line Tools' first, and then, run this script again"
+    echo -e "To install Xcode CLT run : xcode-select --install${NC}"
     exit
 fi
 
-SERIE_FOLDER_PATH=$(readlink -e $1)
+SERIE_FOLDER_PATH=$(readlink -e $1 2> /dev/null) #if no path given readlink fails and prints out an Error
 
 if [ "$SERIE_FOLDER_PATH" == "" ]; then
-    echo "Couldn't find the folder \"$1\". Look for tipos"
+    echo "Couldn't find the folder \"$1\". Don't fogret to give a path or look for tipos"
     exit
 fi
 
@@ -184,12 +208,13 @@ if [ $(grep -c "\*\*\*ERR\*\*\*" $FILE_WITH_EPISODE_NAME_PATH) -eq 0 ]; then # i
         # there are most likely hardcoded or available through the menu.
 
     fi
-echo "Renaming success"
+echo "Episode renaming done"
 fi
 
 
 
 rm $FILE_WITH_EPISODE_NAME_PATH
+
 
 
 

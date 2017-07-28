@@ -5,9 +5,12 @@ OS="$1"
 INSTALL="$2"
 ERR_FLAG=0
 
-echo ""
-echo "Package installation checking..."
+RED='\033[0;31m'
+GREEN='\033[0;32m'
+NC='\033[0m' # No Color
 
+sudo echo ""
+echo "Installation ..."
 
 if [ $OS == "Darwin" ]; then # macOS
     for word in $INSTALL; do

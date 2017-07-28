@@ -38,9 +38,9 @@ if [ $OS == "Darwin" ]; then # macOS
         echo "System up to date"
         exit $CODE_OK
     else
-        echo "$INSTALL need(s) to be installed first"
+        echo "The system needs the installation of : $INSTALL"
         until [[ $answer == "y" || $answer == "Y" || $answer == "n" || $answer == "N" ]]; do
-            echo "Do you want to do the installation now? (y/n)"
+            echo -e "Do you want to do the installation now? (y/n) \c"
             read answer
         done
         if [[ $answer == "n" || $answer == "N" ]];then
