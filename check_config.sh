@@ -42,6 +42,19 @@ if [ $OS == "Darwin" ]; then # macOS
             exit 2
         fi
     fi
+fi
+
+if [ $OS == "Linux" ];then
+
+    if [ $(ls "/usr/bin" | grep -c "python3") -eq 0 ]; then
+        INSTALL="$INSTALL python3"
+    fi
+
+    if [[ $(find /usr/local/lib/python3* -name "pytvmaze") == "" ]]; then
+        INSTALL="$INSTALL pytvmaze"
+    fi
+fi
+
 
     osascript  -e 'do shell script "open -a Terminal ."' -e 'tell application "Terminal" to do script "./install.sh '" ${OS} '$INSTALL' "' " in selected tab of the front window' > /dev/null
     echo "Installation success"
