@@ -12,7 +12,7 @@ It will then, propose to install them for you.
 You can either accept or refuse. Of course if your answer is no, the script will exit. If you want to run it you can install the packages yourself (or run the script again and let it do it for you)
 
 ### API Installation
-Automatically installed
+Automatically installed by the script
 
 ```bash
 pip3 install pytvmaze
@@ -36,12 +36,15 @@ To install Xcode:
 ```bash
 xcode-select --install
 ```
-Don't click on 'Get Xcode'. Click on 'Install' button. You don't need the full app.
+Don't click on 'Get Xcode'. Click on 'Install' button. You don't need the full app (to run this script).
 
 http://railsapps.github.io/xcode-command-line-tools.html
 
 Things the script will check/install:
 - Homebrew
+```bash
+ruby -e "$(curl -fsSL https://raw.githubusercontent.com/Homebrew/install/master/install)"
+```
 
 Info here:
 https://brew.sh
@@ -69,13 +72,20 @@ Info here: https://github.com/Homebrew/homebrew-core/blob/master/Formula/gnu-sed
 
 https://www.gnu.org/software/sed/
 
-### API Installation
-Automatically installed
+### For Windows users
+Sorry this script can't be ran under Windows OS (yet)
 
+## Uninstall
 ```bash
-pip3 install pytvmaze
+./uninstal_pkg.sh
 ```
-See README here: https://github.com/srob650/pytvmaze
+This script is to use with extrem carefullness. 
+Not that it will do irreversible actions but more that some packages will be uninstalled reguardless of their usefullness.
+You might still need some of them in the future for other use like Python3 or Homebrew etc.
+Xcode Command Line Tools uninstallation is commented. Since it's pretty usefull whatever you're doing on your terminal.
+ 
+This script uninstall all packages needed for the main script to work. Even though you've installed some by yourself for previous use.
+Feel free to comment the uninstall lines for the packages you want to keep.
 
 ## Example
 ```bash
