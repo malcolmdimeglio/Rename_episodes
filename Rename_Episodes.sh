@@ -28,7 +28,8 @@ SEASON_NUMBER=""
 PARENT_FOLDER_NAME=""
 OPTION="DEFAULT"
 
-rm *.log 2> /dev/null #erase all log files from previous use
+# If previous package installation failed some .log files might still be around 
+rm *.log 2> /dev/null
 
 
 ./check_config.sh
@@ -49,7 +50,6 @@ elif [ $ret == $CODE_ERR_PKG_INSTALL ]; then
     echo -e "Bye-e ${NC}"
     echo ""
     exit
-
 elif [ $ret == $CODE_NO_XCODE ]; then
     echo -e "${BLUE}Please install 'Xcode Command Line Tools' first, and then, run this script again"
     echo -e "To install Xcode CLT run : xcode-select --install${NC}"
@@ -73,7 +73,7 @@ PARENT_FOLDER_NAME=$(basename $(readlink -e .))
 # Now truncate both sides of the folder's name and store the result
 infos=$(echo $PARENT_FOLDER_NAME | sed 's/\ \-\ /\n/g')
 # We want the number of .mkv + .mp4 + .avifile stored. This will help in case two episodes have been merged into one.
-# whereas on internet they may appear as two different ones. 
+# Whereas on internet they may appear as two different ones. 
 # We will store that value in the .txt file later, then the python script will check the accuracy and prevent shifting in naming.
 total_mkv_file=$(ls *.mkv *.mp4 *.avi 2> /dev/null | wc -l | sed 's/\t//')
 

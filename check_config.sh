@@ -1,5 +1,10 @@
 #!/bin/bash
 
+# This script will check which OS you're running it from.
+# Then, check which packages you're lacking to continue
+# Will ask you whether you want to install them or not.
+
+
 
 CODE_OK=0
 CODE_NO_INSTALLATION=1
@@ -14,23 +19,32 @@ echo "Package installation checking..."
 
 if [ $OS == "Darwin" ]; then # macOS
 
+    # Xcode Command Line Tools
     if [[ $(find -d /Library/Developer -name "CommandLineTools" 2> /dev/null) == "" ]]; then
         exit $CODE_NO_XCODE
     fi
+
+    # Homebrew
     if [[ $(find -d /usr/local -name "Homebrew" 2> /dev/null) == ""  ]]; then
         INSTALL="$INSTALL Homebrew"
     fi
+
+    # Coreutils
     if [[ $(find -d /usr/local/Cellar -name "coreutils" 2> /dev/null) == ""  ]]; then
         INSTALL="$INSTALL coreutils"
     fi
 
+    # GNU sed
     if [[ $(find -d /usr/local/Cellar -name "gnu-sed" 2> /dev/null) == ""  ]]; then
         INSTALL="$INSTALL gnu-sed"
     fi
 
+    # Python3
     if [[ $(find -d /usr/local/bin -name "python3" 2> /dev/null) == ""  ]]; then
         INSTALL="$INSTALL python3"
     fi
+
+    # Pytvmaze API
     if [[ $(find /Library/Frameworks/Python.framework/Versions/python3* -name "pytvmaze" 2> /dev/null) == "" && \
           $(find /usr/local/lib/python3* -name "pytvmaze" 2> /dev/null) == "" ]]; then
         INSTALL="$INSTALL pytvmaze"
@@ -62,10 +76,11 @@ if [ $OS == "Linux" ];then
     fi
 fi
 
+# launch the installation
 ./install.sh $OS "$INSTALL"
 ret=$?
 
-if [ $ret == 0 ]; then
+if [ $ret == CODE_OK ]; then
     echo -e "Installation success\n"
     exit $CODE_OK
 else
