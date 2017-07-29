@@ -17,7 +17,7 @@ NC='\033[0m' # No Color
 
 CODE_OK=0
 CODE_REFUSE_INSTALLATION=1
-CODE_ERR_PCKG_INSTALL=2
+CODE_ERR_PKG_INSTALL=2
 CODE_NO_XCODE=3
 
 SCRIPT_FOLDER_PATH=$PWD
@@ -42,7 +42,7 @@ if [ $ret == $CODE_REFUSE_INSTALLATION ]; then
     echo -e "Bye-e ${NC}"
     echo ""
     exit
-elif [ $ret == $CODE_ERR_PCKG_INSTALL ]; then
+elif [ $ret == $CODE_ERR_PKG_INSTALL ]; then
     echo -e "${RED}Something went wrong during a package installation"
     echo "this script can't rename the files without all packages installed"
     echo "The episodes didn't get renamed"
