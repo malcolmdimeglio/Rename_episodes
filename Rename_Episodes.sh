@@ -35,6 +35,13 @@ rm *.log 2> /dev/null #erase all log files from previous use
 ret=$?
 
 if [ $ret == $CODE_REFUSE_INSTALLATION ]; then
+    echo -e "${RED}Something went wrong during a package installation"
+    echo "this script can't rename the files without all packages installed"
+    echo "The episodes didn't get renamed"
+    echo -e "Bye${NC}"
+    echo ""
+    exit
+elif [ $ret == $CODE_ERR_PKG_INSTALL ]; then
     echo -e "${RED}Sorry you can't run this scrpit. Please get a proper setup and run the script again"
     echo "You can read the log files if there was an error during the installation"
     echo "If there is no log file then, the installation went fine and the problem came from somthing else"
@@ -42,13 +49,7 @@ if [ $ret == $CODE_REFUSE_INSTALLATION ]; then
     echo -e "Bye-e ${NC}"
     echo ""
     exit
-elif [ $ret == $CODE_ERR_PKG_INSTALL ]; then
-    echo -e "${RED}Something went wrong during a package installation"
-    echo "this script can't rename the files without all packages installed"
-    echo "The episodes didn't get renamed"
-    echo -e "Bye${NC}"
-    echo ""
-    exit
+
 elif [ $ret == $CODE_NO_XCODE ]; then
     echo -e "${BLUE}Please install 'Xcode Command Line Tools' first, and then, run this script again"
     echo -e "To install Xcode CLT run : xcode-select --install${NC}"
