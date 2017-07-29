@@ -7,17 +7,15 @@
  - Rename the main folder if there is a typo in the Season Name
 
 ## Installation instruction
-You will need python 3 installed. This script won't run with Python 2.
-Both Bash & Python languages are used here.
+You don't need to install anything by yourself. This script will automatically check which package/API you need to run it.
+It will then, propose to install them for you.
+You can either accept or refuse. Of course if your answer is no, the script will exit. If you want to run it you can install the packages yourself (or run the script again and let it do it for you)
 
-```bash
-$ apt-get install python3
-```
 ### API Installation
+Automatically installed
 
-You will need an API to get the season's information
 ```bash
-$ pip3 install pytvmaze
+pip3 install pytvmaze
 ```
 See README here: https://github.com/srob650/pytvmaze
 
@@ -31,19 +29,53 @@ mv /usr/local/lib/python2.X/dist-packages/pytvmaze /usr/local/lib/python3.Y/dist
 Replace 'X' and 'Y' with your versions of python.
 
 ### For OSX users
-Coreutils package is not a built-in feature on OSX.
-This script uses GNU bash command. If you want this code to run smoothly you need to execute the following lines.
-#### Installing Coreutils command lines
+Everything is being taking care of by the script exept the installation of Xcode Command Line Tools.
+If you don't have it installed, the script will detect it and ask you to do it yourself. You can of course run the script again after the installation.
+
+To install Xcode:
+```bash
+xcode-select --install
+```
+Don't click on 'Get Xcode'. Click on 'Install' button. You don't need the full app.
+
+http://railsapps.github.io/xcode-command-line-tools.html
+
+Things the script will check/install:
+- Homebrew
+
+Info here:
+https://brew.sh
+
+- Python 3
+```bash
+brew install python3
+```
+Info here: https://www.python.org/
+
+- Coreutils
 ```bash
 brew install coreutils
 ```
-#### Export to the PATH
-modify your .bash_profile and add the following lines
+Info here: https://github.com/Homebrew/homebrew-core/blob/master/Formula/coreutils.rb
+
+https://www.gnu.org/software/coreutils
+
+- GNU sed
 ```bash
-# enable Homebrew coreutils
-export PATH="/usr/local/opt/coreutils/libexec/gnubin:$PATH"
-export MANPATH="/usr/local/opt/coreutils/libexec/gnuman:$MANPATH"
+brew install gnu-sed --with-default-names
 ```
+
+Info here: https://github.com/Homebrew/homebrew-core/blob/master/Formula/gnu-sed.rb
+
+https://www.gnu.org/software/sed/
+
+### API Installation
+Automatically installed
+
+```bash
+pip3 install pytvmaze
+```
+See README here: https://github.com/srob650/pytvmaze
 
 ## Example
 ```bash
@@ -57,10 +89,12 @@ The folder name **MUST HAVE** the following name structure: '[SeasonName] - [Sea
 The 2 white spaces around the dash are important.
 White spaces in the SeasonName are allowed
 
+Ex: **Black Mirror - Season 2**
 
-**Original name:** Black.Mirror.S01E02.1080p.WEB-DL-Special.mkv
 
-**Final name:** Black Mirror - 01x02 - Fifteen Million Merits.mkv
+**Original file name:** Black.Mirror.S01E02.1080p.WEB-DL-Special.mkv
+
+**Final file name:** Black Mirror - 01x02 - Fifteen Million Merits.mkv
 
 ## Special behaviour
 This script handles different special behaviour like:
@@ -138,8 +172,8 @@ Rename the 2 folders:
 * Homeland - Season 5
 * Incorporated - Season 1
 
-- The Homeland folder contains no mistakes. (You can add a typo if you feel the need to test it : 'Homelnd - Season 5' or whichever you want)
-- The Incorporated folder contains 9 episodes instead of 10. The 9th episode is the season finale, so it actually is both 9th and 10th episode merged.
+- The Homeland folder contains no mistakes. (You can add a typo if you feel the need to test it : 'Homelnd - Season 5' or whatever you want)
+- The Incorporated folder contains 9 episodes instead of 10. The 9th episode is the season finale, yo look like both 9th and 10th episode merged.
 
 Run these lines to start testing.
 ```bash
@@ -149,8 +183,9 @@ Run these lines to start testing.
 
 ## Word of the programmer
 * If you use this code properly and what it is made for, it will work like a charm.
-* If you find some flaws, please share them. I'll modify my code if I feel the need.
+* If you find some flaws, please share them. I'll modify my code if needed.
 * It is of course possible to improve the script, make it bigger, add more information, but as for my own use, that's all I need.
+* Enjoy
 
 
 
