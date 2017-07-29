@@ -17,16 +17,18 @@ if [ $OS == "Darwin" ]; then # macOS
     if [[ $(find -d /Library/Developer -name "CommandLineTools" 2> /dev/null) == "" ]]; then
         exit $CODE_NO_XCODE
     fi
-    if [ $(ls "/usr/local/" 2> /dev/null | grep -c "Homebrew") -eq 0 ]; then
+    if [[ $(find -d /usr/local -name "Homebrew" 2> /dev/null) == ""  ]]; then
         INSTALL="$INSTALL Homebrew"
     fi
-    if [ $(ls "/usr/local/Cellar" 2> /dev/null | grep -c "coreutils") -eq 0 ]; then
+    if [[ $(find -d /usr/local/Cellar -name "coreutils" 2> /dev/null) == ""  ]]; then
         INSTALL="$INSTALL coreutils"
     fi
-    if [ $(ls "/usr/local/Cellar" 2> /dev/null | grep -c "gnu-sed") -eq 0 ]; then
+
+    if [[ $(find -d /usr/local/Cellar -name "gnu-sed" 2> /dev/null) == ""  ]]; then
         INSTALL="$INSTALL gnu-sed"
     fi
-    if [ $(ls "/usr/local/bin" 2> /dev/null | grep -c "python3") -eq 0 ]; then
+
+    if [[ $(find -d /usr/local/bin -name "python3" 2> /dev/null) == ""  ]]; then
         INSTALL="$INSTALL python3"
     fi
     if [[ $(find /Library/Frameworks/Python.framework/Versions/python3* -name "pytvmaze" 2> /dev/null) == "" && \
