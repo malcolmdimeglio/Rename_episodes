@@ -77,7 +77,7 @@ if [ $OS == "Linux" ];then
 fi
 
 # launch the installation
-./install.sh $OS "$INSTALL"
+./install_pkg.sh $OS "$INSTALL"
 ret=$?
 
 if [ $ret == CODE_OK ]; then

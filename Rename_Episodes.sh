@@ -32,7 +32,7 @@ OPTION="DEFAULT"
 rm *.log 2> /dev/null
 
 
-./check_config.sh
+./check_pkg_config.sh
 ret=$?
 
 if [ $ret == $CODE_REFUSE_INSTALLATION ]; then
@@ -109,7 +109,7 @@ SEASON_NUMBER=$(printf %02d $(sed -n 2p $FILE_WITH_EPISODE_NAME_PATH))
 cd $SCRIPT_FOLDER_PATH
 # Now at /aaa/bbb/ccc/Script_Episode
 
-./find_name_on_internet.py
+./find_episodes_online.py
 
 cd $SERIE_FOLDER_PATH
 # Now at /xxx/yyy/zzz/Season_Name - Season X
