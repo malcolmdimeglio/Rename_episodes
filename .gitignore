@@ -1,18 +1,3 @@
-# Ignore everything
-*
-
-# Except 
-## Scripts
-!Rename_Episodes.sh
-!check_config.sh
-!install.sh
-!uninstall_pkg.sh
-!find_name_on_internet.py
-
-## Folders
-!Tests/
-
-## Readme
-!README.md
-
+# Ignore log files
+*.log
 
