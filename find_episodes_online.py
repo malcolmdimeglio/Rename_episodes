@@ -56,6 +56,7 @@
 import os
 import time
 import pytvmaze
+import sys
 
 # https://github.com/srob650/pytvmaze
 
@@ -114,7 +115,9 @@ def ask_yes_no_question (question):
         ask_yes_no_question (question)
 
 
-with open ("list_of_episode_names.txt","r") as my_file:
+episode_file_path = sys.argv[1]
+
+with open (episode_file_path,"r") as my_file:
     season_name = my_file.readline().rstrip()
     season_number = my_file.readline().rstrip()
     txt_total_ep = my_file.readline().rstrip()
@@ -137,7 +140,7 @@ except:
     input("Press Enter to exit")
     raise SystemExit("")
 
-with open ("list_of_episode_names.txt","w") as my_file:
+with open (episode_file_path,"w") as my_file:
     try:
         for episode in my_show[int(season_number)]:
             web_nbr_of_episodes += 1

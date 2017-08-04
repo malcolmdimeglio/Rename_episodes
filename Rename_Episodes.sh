@@ -21,12 +21,13 @@ CODE_ERR_PKG_INSTALL=2
 CODE_NO_XCODE=3
 
 SCRIPT_FOLDER_PATH=$PWD
-FILE_WITH_EPISODE_NAME="list_of_episode_names.txt"
-FILE_WITH_EPISODE_NAME_PATH=""
+FILE_WITH_EPISODE_NAME=$(mktemp)
 SEASON_NAME=""
 SEASON_NUMBER=""
 PARENT_FOLDER_NAME=""
 OPTION="DEFAULT"
+
+chmod u+x $FILE_WITH_EPISODE_NAME
 
 # If previous package installation failed some .log files might still be around 
 rm *.log 2> /dev/null
@@ -80,45 +81,39 @@ total_mkv_file=$(ls *.mkv *.mp4 *.avi 2> /dev/null | wc -l | sed 's/\t//')
 cd $SCRIPT_FOLDER_PATH
 # now at /aaa/bbb/ccc/Script_Episode
 
-# This create the .txt file and give permission to modify it, then write the info in it
-touch $FILE_WITH_EPISODE_NAME
-chmod u+x $FILE_WITH_EPISODE_NAME
-
-FILE_WITH_EPISODE_NAME_PATH=$(readlink -e $FILE_WITH_EPISODE_NAME)
-
 # Let's store the useful information
 for info in $infos
 do
-    echo $info >> $FILE_WITH_EPISODE_NAME_PATH
+    echo $info >> $FILE_WITH_EPISODE_NAME
 done
 
-echo $total_mkv_file >> $FILE_WITH_EPISODE_NAME_PATH
+echo $total_mkv_file >> $FILE_WITH_EPISODE_NAME
 # At the end :
 # 1st line = Season Name
 # 2nd line = Season N
 # 3rd line = number of episodes (.mkv + mp4 + avi files)
 
 # We save the season Name and Season Number in global variables we'll use later
-SEASON_NAME="$(sed -n 1p $FILE_WITH_EPISODE_NAME_PATH)"
+SEASON_NAME="$(sed -n 1p $FILE_WITH_EPISODE_NAME)"
 
 # We don't actually need "Season" of "Season N", only the number matters
-sed -i '2 s/[^0-9]//g' $FILE_WITH_EPISODE_NAME_PATH
+sed -i '2 s/[^0-9]//g' $FILE_WITH_EPISODE_NAME
 # We want the season number a 2 digit number 02, 05, 10 etc.
-SEASON_NUMBER=$(printf %02d $(sed -n 2p $FILE_WITH_EPISODE_NAME_PATH))
+SEASON_NUMBER=$(printf %02d $(sed -n 2p $FILE_WITH_EPISODE_NAME))
 
 cd $SCRIPT_FOLDER_PATH
 # Now at /aaa/bbb/ccc/Script_Episode
 
-./find_episodes_online.py
+./find_episodes_online.py $FILE_WITH_EPISODE_NAME
 
 cd $SERIE_FOLDER_PATH
 # Now at /xxx/yyy/zzz/Season_Name - Season X
 # 
-if [ $(grep -c "\*\*\*New_Name" $FILE_WITH_EPISODE_NAME_PATH) -gt 0 ] # if new name to be defined then change it (because of a possible typo in the folder name)
+if [ $(grep -c "\*\*\*New_Name" $FILE_WITH_EPISODE_NAME) -gt 0 ] # if new name to be defined then change it (because of a possible typo in the folder name)
 then
-    SEASON_NAME="$( grep "\*\*\*New_Name" $FILE_WITH_EPISODE_NAME_PATH | sed 's/\*\*\*New_Name \= //')"
+    SEASON_NAME="$( grep "\*\*\*New_Name" $FILE_WITH_EPISODE_NAME | sed 's/\*\*\*New_Name \= //')"
 
-    sed -i '/\*\*\*New_Name/d' $FILE_WITH_EPISODE_NAME_PATH
+    sed -i '/\*\*\*New_Name/d' $FILE_WITH_EPISODE_NAME
     
     cd ..
     # now at /xxx/yyy/zzz/
@@ -133,22 +128,22 @@ then
     # now at /xxx/yyy/zzz/Season_Name - Season X (with updated Season_Name)
 fi
 
-if [ $(grep -c "\*\*\*Merge" $FILE_WITH_EPISODE_NAME_PATH) -gt 0 ]; then # Means we need to merge 2 episode names into 1
+if [ $(grep -c "\*\*\*Merge" $FILE_WITH_EPISODE_NAME) -gt 0 ]; then # Means we need to merge 2 episode names into 1
     OPTION="MERGE"
     
-    ep1=$(grep "\*\*\*Merge" $FILE_WITH_EPISODE_NAME_PATH | sed 's/\*\*\*Merge \= //' | cut -d ' ' -f1)
-    ep2=$(grep "\*\*\*Merge" $FILE_WITH_EPISODE_NAME_PATH | sed 's/\*\*\*Merge \= //' | cut -d ' ' -f2)
+    ep1=$(grep "\*\*\*Merge" $FILE_WITH_EPISODE_NAME | sed 's/\*\*\*Merge \= //' | cut -d ' ' -f1)
+    ep2=$(grep "\*\*\*Merge" $FILE_WITH_EPISODE_NAME | sed 's/\*\*\*Merge \= //' | cut -d ' ' -f2)
 
-    sed -i '/\*\*\*Merge/d' $FILE_WITH_EPISODE_NAME_PATH # don't want that line in the file anymore
+    sed -i '/\*\*\*Merge/d' $FILE_WITH_EPISODE_NAME # don't want that line in the file anymore
 
 fi
 
-if [ $(grep -c "\*\*\*ERR\*\*\*" $FILE_WITH_EPISODE_NAME_PATH) -eq 0 ]; then # if no Error in file
+if [ $(grep -c "\*\*\*ERR\*\*\*" $FILE_WITH_EPISODE_NAME) -eq 0 ]; then # if no Error in file
 
     # 1st lower case all the caracter in order to work on a simple base
     # 2nd upper case the first letter of the line
     # 3rd upper case all the letter following a "space" caracter
-    sed -i -e 's/[A-Z]/\L&/g' -e 's/^./\U&/g' -e 's/ ./\U&/g' $FILE_WITH_EPISODE_NAME_PATH
+    sed -i -e 's/[A-Z]/\L&/g' -e 's/^./\U&/g' -e 's/ ./\U&/g' $FILE_WITH_EPISODE_NAME
 
     # We now want to rename all the episodes with the same format
     # e.g. Saison Name - 02x13 - Episode Name.mkv(.mp4)(.avi)(.en.srt)
@@ -165,7 +160,7 @@ if [ $(grep -c "\*\*\*ERR\*\*\*" $FILE_WITH_EPISODE_NAME_PATH) -eq 0 ]; then # i
         fi
 
         if [ $OPTION == "DEFAULT" ]; then
-            EPISODE_NAME="$(sed -n ${num_episode}p $FILE_WITH_EPISODE_NAME_PATH).$ext"
+            EPISODE_NAME="$(sed -n ${num_episode}p $FILE_WITH_EPISODE_NAME).$ext"
             EPISODE_NUMBER="$( printf %02d $num_episode )"
             
             mv "$file" "$SEASON_NAME - ${SEASON_NUMBER}x$EPISODE_NUMBER - $EPISODE_NAME" 2> /dev/null
@@ -174,14 +169,14 @@ if [ $(grep -c "\*\*\*ERR\*\*\*" $FILE_WITH_EPISODE_NAME_PATH) -eq 0 ]; then # i
         elif [ $OPTION == "MERGE" ]; then
             if [ $num_episode == $ep1 ]; then
 
-                EPISODE_NAME="$(sed -n ${ep1}p $FILE_WITH_EPISODE_NAME_PATH)"
-                EPISODE_NAME="${EPISODE_NAME} + $(sed -n ${ep2}p $FILE_WITH_EPISODE_NAME_PATH).$ext"
+                EPISODE_NAME="$(sed -n ${ep1}p $FILE_WITH_EPISODE_NAME)"
+                EPISODE_NAME="${EPISODE_NAME} + $(sed -n ${ep2}p $FILE_WITH_EPISODE_NAME).$ext"
                 EPISODE_NUMBER="$( printf %02d"&"%02d $ep1 $ep2)"
                 
                 mv "$file" "$SEASON_NAME - ${SEASON_NUMBER}x$EPISODE_NUMBER - $EPISODE_NAME" 2> /dev/null
                 num_episode=$(($num_episode+2))
             else
-                EPISODE_NAME="$(sed -n ${num_episode}p $FILE_WITH_EPISODE_NAME_PATH).$ext"
+                EPISODE_NAME="$(sed -n ${num_episode}p $FILE_WITH_EPISODE_NAME).$ext"
                 EPISODE_NUMBER="$( printf %02d $num_episode )"
                 
                 mv "$file" "$SEASON_NAME - ${SEASON_NUMBER}x$EPISODE_NUMBER - $EPISODE_NAME" 2> /dev/null
@@ -198,7 +193,7 @@ if [ $(grep -c "\*\*\*ERR\*\*\*" $FILE_WITH_EPISODE_NAME_PATH) -eq 0 ]; then # i
         
         for file in $(ls -v *.srt)
         do
-            EPISODE_NAME="$(sed -n ${num_episode}p $FILE_WITH_EPISODE_NAME_PATH).$ext"
+            EPISODE_NAME="$(sed -n ${num_episode}p $FILE_WITH_EPISODE_NAME).$ext"
             EPISODE_NUMBER="$( printf %02d $num_episode )"
         
             mv "$file" "$SEASON_NAME - ${SEASON_NUMBER}x$EPISODE_NUMBER - $EPISODE_NAME" 2> /dev/null
@@ -214,7 +209,7 @@ fi
 
 
 
-rm $FILE_WITH_EPISODE_NAME_PATH
+rm $FILE_WITH_EPISODE_NAME
 
 
 
