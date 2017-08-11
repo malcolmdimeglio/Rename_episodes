@@ -80,7 +80,7 @@ fi
 ./install_pkg.sh $OS "$INSTALL"
 ret=$?
 
-if [ $ret == CODE_OK ]; then
+if [ $ret == $CODE_OK ]; then
     echo -e "Installation success\n"
     exit $CODE_OK
 else

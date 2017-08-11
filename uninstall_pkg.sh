@@ -48,6 +48,8 @@ if [ $OS == "Darwin" ]; then # macOS
     # Xcode Command Line Tools
     if [[ $(find -d /Library/Developer -name "CommandLineTools" 2> /dev/null) != "" ]]; then
         #sudo rm -rf /Library/Developer/CommandLineTools
+        echo ""
     fi
-
 fi
+
+
