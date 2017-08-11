@@ -122,25 +122,28 @@ with open (episode_file_path,"r") as my_file:
     season_number = my_file.readline().rstrip()
     txt_total_ep = my_file.readline().rstrip()
 
-
-try:
-    tvm = pytvmaze.TVMaze()
-    my_show = tvm.get_show(show_name=season_name,embed='episodes')
-except pytvmaze.exceptions.ShowNotFound:
-    # The above listed color print functions can't take more than 1 expression, the line below prints as printLightRed  but with several variables
-    print("\033[91mCouldn't find \"{}\" online, look for typos or rename the episodes yourself\nSorry\033[00m".format(season_name))
-    input("Press Enter to exit")
-    raise SystemExit("") #identical to sys.exit(), but in that case I don't need to import another library (here 'sys')
-except pytvmaze.exceptions.ConnectionError:
-    printLightRed("No internet internet connection, check your connection and try again.")
-    input("Press Enter to exit")
-    raise SystemExit("") #identical to sys.exit(), but in that case I don't need to import another library (here 'sys')
-except:
-    printLightRed("Unexpected Error. Check if multiple series have the same name, that could explain why.")
-    input("Press Enter to exit")
-    raise SystemExit("")
-
 with open (episode_file_path,"w") as my_file:
+
+    try:
+        tvm = pytvmaze.TVMaze()
+        my_show = tvm.get_show(show_name=season_name,embed='episodes')
+    except pytvmaze.exceptions.ShowNotFound:
+        # The above listed color print functions can't take more than 1 expression, the line below prints as printLightRed  but with several variables
+        print("\033[91mCouldn't find \"{}\" online, look for typos or rename the episodes yourself\nSorry\033[00m".format(season_name))
+        my_file.write("***ERR***"+'\n')
+        input("Press Enter to exit")
+        raise SystemExit("") #identical to sys.exit(), but in that case I don't need to import another library (here 'sys')
+    except pytvmaze.exceptions.ConnectionError:
+        printLightRed("No internet internet connection, check your connection and try again.")
+        my_file.write("***ERR***"+'\n')
+        input("Press Enter to exit")
+        raise SystemExit("") #identical to sys.exit(), but in that case I don't need to import another library (here 'sys')
+    except:
+        printLightRed("Unexpected Error. Check if multiple series have the same name, that could explain why.")
+        my_file.write("***ERR***"+'\n')
+        input("Press Enter to exit")
+        raise SystemExit("")
+
     try:
         for episode in my_show[int(season_number)]:
             web_nbr_of_episodes += 1
@@ -150,7 +153,6 @@ with open (episode_file_path,"w") as my_file:
         my_file.write("***ERR***"+'\n')
         input("Press Enter to exit")
         raise SystemExit("") #identical to  sys.exit(), but in that case I don't need to import another library (here 'sys')
-
 
     # if the total episode number in the folder is different from the number of episode found on internet 
     if int (txt_total_ep) != web_nbr_of_episodes:
