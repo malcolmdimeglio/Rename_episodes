@@ -110,9 +110,10 @@ if [ $OS == "Linux" ];then
 
     for word in $INSTALL; do
         if [ $(echo $word | grep -c "python3") -eq 1 ]; then
-            apt-get install ptyhon3
-            apt-get update
-            apt-get -y upgrade
+            yes | apt-get install python3
+            
+        elif [ $(echo $word | grep -c "py3-pip") -eq 1 ]; then
+            yes | apt-get install python3-pip
 
         elif [ $(echo $word | grep -c "pytvmaze") -eq 1 ]; then
             pip3 install pytvmaze

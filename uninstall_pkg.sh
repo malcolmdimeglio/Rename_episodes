@@ -53,3 +53,16 @@ if [ $OS == "Darwin" ]; then # macOS
 fi
 
 
+if [ $OS == "Linux" ]; then # macOS
+    if [[ $(find /usr/local/lib/python3* -name "pytvmaze" 2> /dev/null) != "" ]]; then
+        yes | pip3 uninstall pytvmaze
+    fi
+    
+    if [[ $(find /usr/bin -name "python3" 2> /dev/null) != ""  ]]; then
+        yes | apt-get remove python3*
+    fi
+
+fi
+
+
+

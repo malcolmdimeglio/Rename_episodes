@@ -48,9 +48,26 @@ if [ $OS == "Darwin" ]; then # macOS
     if [[ $(find /Library/Frameworks/Python.framework/Versions/python3* -name "pytvmaze" 2> /dev/null) == "" && \
           $(find /usr/local/lib/python3* -name "pytvmaze" 2> /dev/null) == "" ]]; then
         INSTALL="$INSTALL pytvmaze"
+    fi  
+fi
+
+
+if [ $OS == "Linux" ];then
+
+    if [[ $(python3 -V 2> /dev/null) == "" ]]; then
+        INSTALL="$INSTALL python3"
+    fi
+    
+    if [[ $(pip3 -V 2> /dev/null) == "" ]]; then
+        INSTALL="$INSTALL py3-pip"
     fi
 
-    if [[ $INSTALL == "" ]]; then
+    if [[ $(find /usr/local/lib/python3* -name "pytvmaze") == "" ]]; then
+        INSTALL="$INSTALL pytvmaze"
+    fi
+fi
+
+if [[ $INSTALL == "" ]]; then
         echo "System up to date"
         exit $CODE_OK
     else
@@ -62,23 +79,12 @@ if [ $OS == "Darwin" ]; then # macOS
         if [[ $answer == "n" || $answer == "N" ]];then
             exit $CODE_NO_INSTALLATION
         fi
+        if [[ $answer == "y" || $answer == "Y" ]];then
+            # launch the installation
+            ./install_pkg.sh $OS "$INSTALL"
+            ret=$?
+        fi
     fi
-fi
-
-if [ $OS == "Linux" ];then
-
-    if [ $(ls "/usr/bin" | grep -c "python3") -eq 0 ]; then
-        INSTALL="$INSTALL python3"
-    fi
-
-    if [[ $(find /usr/local/lib/python3* -name "pytvmaze") == "" ]]; then
-        INSTALL="$INSTALL pytvmaze"
-    fi
-fi
-
-# launch the installation
-./install_pkg.sh $OS "$INSTALL"
-ret=$?
 
 if [ $ret == $CODE_OK ]; then
     echo -e "Installation success\n"
