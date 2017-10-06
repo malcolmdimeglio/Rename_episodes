@@ -112,7 +112,7 @@ def ask_yes_no_question (question):
         return 1
     else:
         printPink("You smart ass... this is a yes/no question")
-        ask_yes_no_question (question)
+        return ask_yes_no_question (question)
 
 
 episode_file_path = sys.argv[1]
