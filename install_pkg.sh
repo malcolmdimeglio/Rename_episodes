@@ -49,6 +49,12 @@ if [ $OS == "Darwin" ]; then # macOS
                 echo "export MANPATH=\"/usr/local/opt/coreutils/libexec/gnuman:\$MANPATH\"" >> ~/.bash_profile
             fi
 
+            if [ -f ~/.zshrc ] && [ $(cat ~/.bash_profile | grep -c "coreutils") -eq 0 ]; then
+                echo "# enable Homebrew coreutils" >> ~/.zshrc
+                echo "export PATH=\"/usr/local/opt/coreutils/libexec/gnubin:\$PATH\"" >> ~/.zshrc
+                echo "export MANPATH=\"/usr/local/opt/coreutils/libexec/gnuman:\$MANPATH\"" >> ~/.zshrc
+            fi
+
             # Check if installation success or failure
             if [ $(tail -15 install_coreutils.log | grep -c "All commands have been installed") -eq 1 ]; then
                 echo -e "${GREEN}SUCCESS${NC}"
