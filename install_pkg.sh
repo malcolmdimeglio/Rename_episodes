@@ -15,6 +15,7 @@ NC='\033[0m' # No Color
 
 sudo echo ""
 echo "Installation ..."
+touch .current_config.info
 
 if [ $OS == "Darwin" ]; then # macOS
     for word in $INSTALL; do
@@ -29,6 +30,7 @@ if [ $OS == "Darwin" ]; then # macOS
             if [ $(tail -12 install_homebrew.log | grep -c "Installation successful") -eq 1 ]; then
                 echo -e "${GREEN}SUCCESS${NC}"
                 rm install_homebrew.log
+                echo "Homebrew: Installed" >> .current_config.info
             else
                echo -e "${RED}FAIL${NC}"
                ERR_FLAG=1
@@ -59,6 +61,7 @@ if [ $OS == "Darwin" ]; then # macOS
             if [ $(tail -15 install_coreutils.log | grep -c "All commands have been installed") -eq 1 ]; then
                 echo -e "${GREEN}SUCCESS${NC}"
                 rm install_coreutils.log
+                echo "Coreutils: Installed" >> .current_config.info
             else
                echo -e "${RED}FAIL${NC}"
                ERR_FLAG=1
@@ -75,6 +78,7 @@ if [ $OS == "Darwin" ]; then # macOS
             if [ $(tail -1 install_gnu_sed.log | grep -c "built in") -eq 1 ]; then
                 echo -e "${GREEN}SUCCESS${NC}"
                 rm install_gnu_sed.log
+                echo "GNU sed: Installed" >> .current_config.info
             else
                echo -e "${RED}FAIL${NC}"
                ERR_FLAG=1
@@ -89,6 +93,7 @@ if [ $OS == "Darwin" ]; then # macOS
             if [ $(tail -13 install_python3.log | grep -c "have been installed") -eq 1 ]; then
                 echo -e "${GREEN}SUCCESS${NC}"
                 rm install_python3.log
+                echo "Python3: Installed" >> .current_config.info
             else
                echo -e "${RED}FAIL${NC}"
                ERR_FLAG=1
@@ -103,6 +108,7 @@ if [ $OS == "Darwin" ]; then # macOS
             if [ $(tail -1 install_pytvmaze.log | grep -c "Successfully installed") -eq 1 ]; then
                 echo -e "${GREEN}SUCCESS${NC}"
                 rm install_pytvmaze.log
+                echo "Pytvmaze API: Installed" >> .current_config.info
             else
                 echo -e "${RED}FAIL${NC}"
                 ERR_FLAG=1
@@ -117,12 +123,15 @@ if [ $OS == "Linux" ];then
     for word in $INSTALL; do
         if [ $(echo $word | grep -c "python3") -eq 1 ]; then
             yes | apt-get install python3
+            echo "Python3: Installed" >> .current_config.info
             
         elif [ $(echo $word | grep -c "py3-pip") -eq 1 ]; then
             yes | apt-get install python3-pip
+            echo "Python3 pip pkg: Installed" >> .current_config.info
 
         elif [ $(echo $word | grep -c "pytvmaze") -eq 1 ]; then
             pip3 install pytvmaze
+            echo "Pytvmaze API: Installed" >> .current_config.info
         fi
     done
 fi
