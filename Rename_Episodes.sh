@@ -32,7 +32,7 @@ chmod u+x $PATH_FILE_WITH_EPISODE_NAME
 # If previous package installation failed some .log files might still be around 
 rm *.log 2> /dev/null
 
-./check_pkg_config.sh
+./check_pkg_config.sh 2> /dev/null
 ret=$?
 
 if [ $ret == $CODE_REFUSE_INSTALLATION ]; then
@@ -53,6 +53,9 @@ elif [ $ret == $CODE_ERR_PKG_INSTALL ]; then
 elif [ $ret == $CODE_NO_XCODE ]; then
     echo -e "${BLUE}Please install 'Xcode Command Line Tools' first, and then, run this script again"
     echo -e "To install Xcode CLT run : xcode-select --install${NC}"
+    exit
+elif [ $ret == 127 ]; then
+    echo "Be carefull with the path you're giving. Something is wrong here. Try again with a different one"
     exit
 fi
 
@@ -96,6 +99,12 @@ SEASON_NUMBER=$(printf %02d $(sed -n 2p $PATH_FILE_WITH_EPISODE_NAME))
 
 
 ./find_episodes_online.py $PATH_FILE_WITH_EPISODE_NAME
+ret=$?
+
+if [ $ret == 1 ]; then
+    echo "Something is wrong with the script. Contact developper"
+    echo "Your files haven't been renamed"
+    exit
 
 
 if [ $(grep -c "\*\*\*New_Name" $PATH_FILE_WITH_EPISODE_NAME) -gt 0 ] # if new name to be defined then change it (because of a possible typo in the folder name)
