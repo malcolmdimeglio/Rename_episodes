@@ -27,6 +27,7 @@ SEASON_NUMBER=""
 PARENT_FOLDER_NAME=""
 OPTION="DEFAULT"
 
+
 chmod u+x $PATH_FILE_WITH_EPISODE_NAME
 
 # If previous package installation failed some .log files might still be around 
@@ -105,6 +106,7 @@ if [ $ret == 1 ]; then
     echo "Something is wrong with the script. Contact developper"
     echo "Your files haven't been renamed"
     exit
+fi
 
 
 if [ $(grep -c "\*\*\*New_Name" $PATH_FILE_WITH_EPISODE_NAME) -gt 0 ] # if new name to be defined then change it (because of a possible typo in the folder name)
@@ -124,12 +126,13 @@ fi
 
 if [ $(grep -c "\*\*\*Merge" $PATH_FILE_WITH_EPISODE_NAME) -gt 0 ]; then # Means we need to merge 2 episode names into 1
     OPTION="MERGE"
-    
-    ep1=$(grep "\*\*\*Merge" $PATH_FILE_WITH_EPISODE_NAME | sed 's/\*\*\*Merge \= //' | cut -d ' ' -f1)
-    ep2=$(grep "\*\*\*Merge" $PATH_FILE_WITH_EPISODE_NAME | sed 's/\*\*\*Merge \= //' | cut -d ' ' -f2)
-
+    nb_couple_episodes=$(grep "\*\*\*Merge" $PATH_FILE_WITH_EPISODE_NAME | grep -o , | wc -l)
+    for i in `seq 1 $nb_couple_episodes`
+    do
+        episode1=$episode1$(grep "\*\*\*Merge" $PATH_FILE_WITH_EPISODE_NAME | sed 's/\*\*\*Merge \= //' | cut -d ' ' -f$i | cut -d ',' -f1)" "
+        episode2=$episode2$(grep "\*\*\*Merge" $PATH_FILE_WITH_EPISODE_NAME | sed 's/\*\*\*Merge \= //' | cut -d ' ' -f$i | cut -d ',' -f2)" "
+    done
     sed -i '/\*\*\*Merge/d' $PATH_FILE_WITH_EPISODE_NAME # don't want that line in the file anymore
-
 fi
 
 if [ $(grep -c "\*\*\*ERR\*\*\*" $PATH_FILE_WITH_EPISODE_NAME) -eq 0 ]; then # if no Error in file
@@ -143,6 +146,7 @@ if [ $(grep -c "\*\*\*ERR\*\*\*" $PATH_FILE_WITH_EPISODE_NAME) -eq 0 ]; then # i
     # e.g. Saison Name - 02x13 - Episode Name.mkv(.mp4)(.avi)(.en.srt)
     # or Saison Name - 02x13&14 - Episode Name + Episode Name.mkv(.mp4)(.avi)(.en.srt)
     num_episode=1
+    count=1
     for file in $(find $PATH_SERIE_FOLDER  -name "*.mkv" -o -name "*.mp4" -o -name "*.avi" 2> /dev/null | sort -V)
     do
         if [ $(echo $file | grep -c ".mkv") -gt 0 ]; then
@@ -161,14 +165,17 @@ if [ $(grep -c "\*\*\*ERR\*\*\*" $PATH_FILE_WITH_EPISODE_NAME) -eq 0 ]; then # i
             ((num_episode++))
 
         elif [ $OPTION == "MERGE" ]; then
-            if [ $num_episode == $ep1 ]; then
-
+            if [ $(echo $episode1 | grep -c $num_episode) -gt 0 ]; then
+                ep1=$(echo $episode1 | cut -d' ' -f$count)
+                ep2=$(echo $episode2 | cut -d' ' -f$count)
+                
                 EPISODE_NAME="$(sed -n ${ep1}p $PATH_FILE_WITH_EPISODE_NAME)"
                 EPISODE_NAME="${EPISODE_NAME} + $(sed -n ${ep2}p $PATH_FILE_WITH_EPISODE_NAME)"
                 EPISODE_NUMBER="$( printf %02d"&"%02d $ep1 $ep2)"
                 
                 mv "$file" "$PATH_SERIE_FOLDER/$SEASON_NAME - ${SEASON_NUMBER}x$EPISODE_NUMBER - $EPISODE_NAME.$ext" 2> /dev/null
                 num_episode=$(($num_episode+2))
+                ((count++))
             else
                 EPISODE_NAME="$(sed -n ${num_episode}p $PATH_FILE_WITH_EPISODE_NAME)"
                 EPISODE_NUMBER="$( printf %02d $num_episode )"
@@ -176,7 +183,6 @@ if [ $(grep -c "\*\*\*ERR\*\*\*" $PATH_FILE_WITH_EPISODE_NAME) -eq 0 ]; then # i
                 mv "$file" "$PATH_SERIE_FOLDER/$SEASON_NAME - ${SEASON_NUMBER}x$EPISODE_NUMBER - $EPISODE_NAME.$ext" 2> /dev/null
                 ((num_episode++))
             fi
-
         fi
 
     done
@@ -201,12 +207,7 @@ if [ $(grep -c "\*\*\*ERR\*\*\*" $PATH_FILE_WITH_EPISODE_NAME) -eq 0 ]; then # i
 echo "Episode renaming done"
 fi
 
-
-
 rm $PATH_FILE_WITH_EPISODE_NAME
-
-
-
 
 
 

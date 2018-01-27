@@ -177,17 +177,13 @@ with open(episode_file_path, "w") as my_file:
 
         if answer:
             merge_ep = options(int(txt_total_ep), int(web_nbr_of_episodes))
-            print("merge_ep = " + str(merge_ep))
             for episode in my_show[int(season_number)]:
                 my_file.write(episode.title+'\n')
             if merge_ep:  # means merge needed
-                print("OLA")
                 my_file.write("***Merge = ")
                 for ep in merge_ep:
                     my_file.write("{} " .format(str(ep)))
                 my_file.write('\n')
-            else:
-                print("ALO")
         elif not answer:
             print_pink("Renaming process aborted")
             my_file.write("***ERR***"+'\n')
