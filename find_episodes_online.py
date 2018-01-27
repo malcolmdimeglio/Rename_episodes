@@ -88,19 +88,24 @@ def print_pink(word): print("\033[95m {}\033[00m" .format(word))
 
 
 def options(mkv_nbr, web_nbr):
-    if mkv_nbr < web_nbr:  # ask if merge 2 or more episodes names
-        input_list = input("List the episodes' number you want to merge, separated by spaces: ")
-        input_list = input_list.split(' ')
+    if web_nbr - mkv_nbr == 2:  # 2 episodes to merge
+        input_list = input("List the episodes' number you want to merge, separated by a comma: e.g: 3,4"+'\n')
+        input_list = input_list.split(',')
 
+        if len(input_list) == 0:
+            return []
         if len(input_list) != 2:
             print("Please only put 2 episodes you want to merge together")
             options(mkv_nbr, web_nbr)
         else:
-            if int(input_list[0]) > int(input_list[1]):
-                input_list[1], input_list[0] = input_list[0], input_list[1]
-            return input_list[0], input_list[1]
+            return input_list
+
+    elif web_nbr - mkv_nbr > 2:  # more than 2 episodes to merge
+        input_list = input("List the episodes' number you want to merge, separated by a comma: e.g: 1,2 7,8 11,12"+'\n')
+        input_list = input_list.split(' ')
+        return input_list
     else:  # remind that the exceeding files wont be renamed
-        return 0, 0
+        return []
 
 
 def ask_yes_no_question(question):
@@ -171,11 +176,18 @@ with open(episode_file_path, "w") as my_file:
             answer = ask_yes_no_question("Do you want to continue the naming process? (the last "+str(int(txt_total_ep) - web_nbr_of_episodes)+" episode(s) won't be properly renamed)")
 
         if answer:
-            (merge1, merge2) = options(int(txt_total_ep), int(web_nbr_of_episodes))
+            merge_ep = options(int(txt_total_ep), int(web_nbr_of_episodes))
+            print("merge_ep = " + str(merge_ep))
             for episode in my_show[int(season_number)]:
                 my_file.write(episode.title+'\n')
-            if int(merge1) != 0:  # means merge needed
-                my_file.write("***Merge = "+merge1+' '+merge2+'\n')
+            if merge_ep:  # means merge needed
+                print("OLA")
+                my_file.write("***Merge = ")
+                for ep in merge_ep:
+                    my_file.write("{} " .format(str(ep)))
+                my_file.write('\n')
+            else:
+                print("ALO")
         elif not answer:
             print_pink("Renaming process aborted")
             my_file.write("***ERR***"+'\n')
