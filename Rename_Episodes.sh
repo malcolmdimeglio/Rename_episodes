@@ -102,7 +102,7 @@ SEASON_NUMBER=$(printf %02d $(sed -n 2p $PATH_FILE_WITH_EPISODE_NAME))
 ./find_episodes_online.py $PATH_FILE_WITH_EPISODE_NAME
 ret=$?
 
-if [ $ret == 1 ]; then
+if [ $ret != 0 ]; then
     echo "Something is wrong with the script. Contact developper"
     echo "Your files haven't been renamed"
     exit
@@ -187,17 +187,40 @@ if [ $(grep -c "\*\*\*ERR\*\*\*" $PATH_FILE_WITH_EPISODE_NAME) -eq 0 ]; then # i
 
     done
 
-    if [ $(find $PATH_SERIE_FOLDER  -name "*.srt" | wc -l) -gt 0 ]; then
+    if [ $(find $PATH_SERIE_FOLDER  -name "*.srt" | wc -l) ==  $(find $PATH_SERIE_FOLDER  -name "*.mkv" -o -name "*.mp4" -o -name "*.avi" 2> /dev/null | wc -l) ]; then
         num_episode=1
+        count=1
         ext="en.srt"
         
         for file in $(find $PATH_SERIE_FOLDER  -name "*.srt" | sort -V)
         do
-            EPISODE_NAME="$(sed -n ${num_episode}p $PATH_FILE_WITH_EPISODE_NAME)"
-            EPISODE_NUMBER="$( printf %02d $num_episode )"
-        
-            mv "$file" "$PATH_SERIE_FOLDER/$SEASON_NAME - ${SEASON_NUMBER}x$EPISODE_NUMBER - $EPISODE_NAME.$ext" 2> /dev/null
-            ((num_episode++))
+            if [ $OPTION == "DEFAULT" ]; then
+                EPISODE_NAME="$(sed -n ${num_episode}p $PATH_FILE_WITH_EPISODE_NAME)"
+                EPISODE_NUMBER="$( printf %02d $num_episode )"
+            
+                mv "$file" "$PATH_SERIE_FOLDER/$SEASON_NAME - ${SEASON_NUMBER}x$EPISODE_NUMBER - $EPISODE_NAME.$ext" 2> /dev/null
+                ((num_episode++))
+
+            elif [ $OPTION == "MERGE" ]; then
+                if [ $(echo $episode1 | grep -c $num_episode) -gt 0 ]; then
+                    ep1=$(echo $episode1 | cut -d' ' -f$count)
+                    ep2=$(echo $episode2 | cut -d' ' -f$count)
+                    
+                    EPISODE_NAME="$(sed -n ${ep1}p $PATH_FILE_WITH_EPISODE_NAME)"
+                    EPISODE_NAME="${EPISODE_NAME} + $(sed -n ${ep2}p $PATH_FILE_WITH_EPISODE_NAME)"
+                    EPISODE_NUMBER="$( printf %02d"&"%02d $ep1 $ep2)"
+                    
+                    mv "$file" "$PATH_SERIE_FOLDER/$SEASON_NAME - ${SEASON_NUMBER}x$EPISODE_NUMBER - $EPISODE_NAME.$ext" 2> /dev/null
+                    num_episode=$(($num_episode+2))
+                    ((count++))
+                else
+                    EPISODE_NAME="$(sed -n ${num_episode}p $PATH_FILE_WITH_EPISODE_NAME)"
+                    EPISODE_NUMBER="$( printf %02d $num_episode )"
+                    
+                    mv "$file" "$PATH_SERIE_FOLDER/$SEASON_NAME - ${SEASON_NUMBER}x$EPISODE_NUMBER - $EPISODE_NAME.$ext" 2> /dev/null
+                    ((num_episode++))
+                fi
+            fi
         done
 
         # Hightly improbable to find 2 merged episodes (.mkv/.mp4/.avi) with 2 merged .srt files. If there are subtitles with this show,
