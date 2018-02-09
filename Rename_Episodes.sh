@@ -102,8 +102,9 @@ SEASON_NUMBER=$(printf %02d $(sed -n 2p $PATH_FILE_WITH_EPISODE_NAME))
 ./find_episodes_online.py $PATH_FILE_WITH_EPISODE_NAME
 ret=$?
 
+# Handle some potential errors and avoid renaming process in this case
 if [ $ret != 0 ]; then
-    echo "Something is wrong with the script. Contact developper"
+    echo "Something went wrong with the script. Contact developper"
     echo "Your files haven't been renamed"
     exit
 fi
@@ -127,6 +128,9 @@ fi
 if [ $(grep -c "\*\*\*Merge" $PATH_FILE_WITH_EPISODE_NAME) -gt 0 ]; then # Means we need to merge 2 episode names into 1
     OPTION="MERGE"
     nb_couple_episodes=$(grep "\*\*\*Merge" $PATH_FILE_WITH_EPISODE_NAME | grep -o , | wc -l)
+    # input line looks like: ***Merge = 1,2 14,15 18,19
+    # we want to seperate everythin into 2 lists:
+    # with the previous given example we want: episode1 = 1 14 18    and     episode2 = 2 15 19
     for i in `seq 1 $nb_couple_episodes`
     do
         episode1=$episode1$(grep "\*\*\*Merge" $PATH_FILE_WITH_EPISODE_NAME | sed 's/\*\*\*Merge \= //' | cut -d ' ' -f$i | cut -d ',' -f1)" "
@@ -166,20 +170,32 @@ if [ $(grep -c "\*\*\*ERR\*\*\*" $PATH_FILE_WITH_EPISODE_NAME) -eq 0 ]; then # i
 
         elif [ $OPTION == "MERGE" ]; then
             if [ $(echo $episode1 | grep -c $num_episode) -gt 0 ]; then
+            # Keeping the same example as above written
+            # 'count' will increment for each merge. it allows to extract 1st episode number to merge, then 2nd on the next loop and so on, from the list: episode1 = 1 14 18
+            # 'num_episode' increments from 1st episode to last (let's say 25) (for 25 files)
+            # first episode will be merged properly, then 'num_episode' jumps to 3, and 'counts' to 2
+            # then 'num_episode' increments to 4 after a normal episode renaming.
+            # If we only grep 'num_episode' in 'episode1'
+            # Problem: grep sees "1 14 18" as a list of unrelated caracters. So 'num_episode' (which is equal to 4) will grep on '14' when it shouldn't
+            # (or if 'num_episode' = 8, 'num_episode' will grep on 18 even if 'counts' = 2)
+            # So we need to isolate each number independantly (with `cut`) that 'num_episode' only greps with 1 number and not the whole list
+            # and -x option for absolute perfect match, that 'num_episode' greps on '14' as a whole and not '1' & '4'
+            if [ $(echo $episode1 | cut -d' ' -f$count| grep -cx $num_episode) -gt 0 ]; then
+                
                 ep1=$(echo $episode1 | cut -d' ' -f$count)
                 ep2=$(echo $episode2 | cut -d' ' -f$count)
-                
+
                 EPISODE_NAME="$(sed -n ${ep1}p $PATH_FILE_WITH_EPISODE_NAME)"
                 EPISODE_NAME="${EPISODE_NAME} + $(sed -n ${ep2}p $PATH_FILE_WITH_EPISODE_NAME)"
                 EPISODE_NUMBER="$( printf %02d"&"%02d $ep1 $ep2)"
                 
                 mv "$file" "$PATH_SERIE_FOLDER/$SEASON_NAME - ${SEASON_NUMBER}x$EPISODE_NUMBER - $EPISODE_NAME.$ext" 2> /dev/null
-                num_episode=$(($num_episode+2))
+                num_episode=$((num_episode+2))
                 ((count++))
             else
                 EPISODE_NAME="$(sed -n ${num_episode}p $PATH_FILE_WITH_EPISODE_NAME)"
                 EPISODE_NUMBER="$( printf %02d $num_episode )"
-                
+
                 mv "$file" "$PATH_SERIE_FOLDER/$SEASON_NAME - ${SEASON_NUMBER}x$EPISODE_NUMBER - $EPISODE_NAME.$ext" 2> /dev/null
                 ((num_episode++))
             fi
@@ -187,6 +203,9 @@ if [ $(grep -c "\*\*\*ERR\*\*\*" $PATH_FILE_WITH_EPISODE_NAME) -eq 0 ]; then # i
 
     done
 
+    # Double check that there is the same amount of .srt files as mkv/mp4/avi files.
+    # It could be possible to have a few HC subtitles or embedded, and some written in a .srt files.
+    # If the number of .srt files differs from the number of movie files, the script will wrongly rename the subtitles. And good luck with that.
     if [ $(find $PATH_SERIE_FOLDER  -name "*.srt" | wc -l) ==  $(find $PATH_SERIE_FOLDER  -name "*.mkv" -o -name "*.mp4" -o -name "*.avi" 2> /dev/null | wc -l) ]; then
         num_episode=1
         count=1
@@ -222,9 +241,6 @@ if [ $(grep -c "\*\*\*ERR\*\*\*" $PATH_FILE_WITH_EPISODE_NAME) -eq 0 ]; then # i
                 fi
             fi
         done
-
-        # Hightly improbable to find 2 merged episodes (.mkv/.mp4/.avi) with 2 merged .srt files. If there are subtitles with this show,
-        # there are most likely hardcoded or available through the menu.
 
     fi
 echo "Episode renaming done"

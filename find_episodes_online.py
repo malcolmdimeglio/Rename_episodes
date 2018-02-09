@@ -127,7 +127,6 @@ with open(episode_file_path, "r") as my_file:
     txt_total_ep = my_file.readline().rstrip()
 
 with open(episode_file_path, "w") as my_file:
-
     try:
         tvm = pytvmaze.TVMaze()
         my_show = tvm.get_show(show_name=season_name, embed='episodes')
@@ -177,14 +176,18 @@ with open(episode_file_path, "w") as my_file:
 
         if answer:
             merge_ep = options(int(txt_total_ep), int(web_nbr_of_episodes))
-            for episode in my_show[int(season_number)]:
-                my_file.write(episode.title+'\n')
-            if merge_ep:  # means merge needed
-                my_file.write("***Merge = ")
-                for ep in merge_ep:
-                    my_file.write("{} " .format(str(ep)))
-                my_file.write('\n')
-        elif not answer:
+            if merge_ep:
+                for episode in my_show[int(season_number)]:
+                    my_file.write(episode.title+'\n')
+                if merge_ep:  # means merge needed
+                    my_file.write("***Merge = ")
+                    for ep in merge_ep:
+                        my_file.write("{} " .format(str(ep)))
+                    my_file.write('\n')
+            else:
+                print_pink("Renaming process aborted")
+                my_file.write("***ERR***"+'\n')
+        else:
             print_pink("Renaming process aborted")
             my_file.write("***ERR***"+'\n')
             
@@ -197,3 +200,8 @@ with open(episode_file_path, "w") as my_file:
     if my_show.name != season_name:
         my_file.write("***New_Name = "+my_show.name+'\n')
         print("\033[96mBe careful there was a typo in your folder name, it was \"{}\" instead of \"{}\"\nI corrected it for you\033[00m". format(season_name, my_show.name))
+
+
+
+
+
