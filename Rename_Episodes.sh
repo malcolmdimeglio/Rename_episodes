@@ -169,7 +169,6 @@ if [ $(grep -c "\*\*\*ERR\*\*\*" $PATH_FILE_WITH_EPISODE_NAME) -eq 0 ]; then # i
             ((num_episode++))
 
         elif [ $OPTION == "MERGE" ]; then
-            if [ $(echo $episode1 | grep -c $num_episode) -gt 0 ]; then
             # Keeping the same example as above written
             # 'count' will increment for each merge. it allows to extract 1st episode number to merge, then 2nd on the next loop and so on, from the list: episode1 = 1 14 18
             # 'num_episode' increments from 1st episode to last (let's say 25) (for 25 files)

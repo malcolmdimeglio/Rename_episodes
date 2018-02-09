@@ -50,6 +50,7 @@
 
 import pytvmaze
 import sys
+import re
 
 # https://github.com/srob650/pytvmaze
 
@@ -88,24 +89,31 @@ def print_pink(word): print("\033[95m {}\033[00m" .format(word))
 
 
 def options(mkv_nbr, web_nbr):
-    if web_nbr - mkv_nbr == 2:  # 2 episodes to merge
+    input_list = ['']
+    if web_nbr - mkv_nbr == 1:  # 2 episodes to merge
         input_list = input("List the episodes' number you want to merge, separated by a comma: e.g: 3,4"+'\n')
-        input_list = input_list.split(',')
-
-        if len(input_list) == 0:
-            return []
-        if len(input_list) != 2:
-            print("Please only put 2 episodes you want to merge together")
-            options(mkv_nbr, web_nbr)
-        else:
-            return input_list
-
-    elif web_nbr - mkv_nbr > 2:  # more than 2 episodes to merge
+    elif web_nbr - mkv_nbr > 1:  # more than 2 episodes to merge
         input_list = input("List the episodes' number you want to merge, separated by a comma: e.g: 1,2 7,8 11,12"+'\n')
-        input_list = input_list.split(' ')
-        return input_list
-    else:  # remind that the exceeding files wont be renamed
+    else:
         return []
+    
+    if input_list == ['']:
+        return []
+  
+    input_list = re.split(' |,',input_list)
+    
+    if web_nbr - mkv_nbr != len(input_list)/2:  #input_list list a pair of episode for 1 merge. '/2' allows to get the number of merge needed.
+            print("Be carefull you need to list {} pair(s) of episode to merge not {}" .format(str(web_nbr - mkv_nbr), str(int(len(input_list)/2))))
+            return options(mkv_nbr, web_nbr)
+
+    for i in range(0,len(input_list)-1,2):  # keep an order. if 4,3 is given, turn it into 3,4
+        if input_list[i] > input_list[i+1]:
+            input_list[i], input_list[i+1] = input_list[i+1], input_list[i]
+
+    for i in range(0,int(len(input_list)/2),1):  # turn the current list from ['2', '3', '5', '6', '8', '9'] into ['2,3', '5,6', '8,9']
+        input_list[i:i+2] = [','.join(input_list[i:i+2])]
+    
+    return input_list
 
 
 def ask_yes_no_question(question):
